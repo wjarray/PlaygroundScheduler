@@ -10,7 +10,6 @@ namespace PlaygroundScheduler.Engine.Tests;
 
 public class JobRunServiceTest
 {
-   
     [Fact]
     public async Task CREATE_RUN_SHOULD_CREATE_PENDING_RUN_WHEN_DEFINITION_EXISTS()
     {
@@ -386,8 +385,6 @@ public class JobRunServiceTest
         Assert.Equal(jobDefinitionId, run.JobDefinitionId);
         Assert.Equal(clock.UtcNow, run.CreatedAt);
     }
-
-    
     
     private static JobRun CreateRunInState(JobRunId runId, JobDefinitionId definitionId, RunStatus runStatus, DateTimeOffset pCreatedAt,DateTimeOffset? pStartedAt, DateTimeOffset? pEndedAt)
     {
