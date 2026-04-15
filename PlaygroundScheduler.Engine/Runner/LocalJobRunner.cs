@@ -7,33 +7,33 @@ namespace PlaygroundScheduler.Engine.Runner;
 
 public class LocalJobRunner : ILocalJobRunner
 {
-    
     public List<JobRunId> StartedRunIds { get; } = new();
     public List<JobRunId> CancelledRunIds { get; } = new();
-    
+
     private readonly IJobRunRepository _jobRunRepository;
     private readonly IJobDefinitionRepository _jobDefinitionRepository;
     private readonly IRunningJobRegistry _runningJobRegistry;
     private readonly IClock _clock;
 
-    public LocalJobRunner(IJobRunRepository jobRunRepository,IJobDefinitionRepository jobDefinitionRepository, IClock clock, IRunningJobRegistry runningJobRegistry)
+    public LocalJobRunner(IJobRunRepository jobRunRepository, IJobDefinitionRepository jobDefinitionRepository,
+        IClock clock, IRunningJobRegistry runningJobRegistry)
     {
         _jobRunRepository = jobRunRepository;
         _jobDefinitionRepository = jobDefinitionRepository;
         _clock = clock;
         _runningJobRegistry = runningJobRegistry;
     }
-    
+
     public async Task StartAsync(JobRunId runId, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
         var run = await _jobRunRepository.GetByIdAsync(runId, ct);
         ArgumentNullException.ThrowIfNull(run);
-        var definition = await _jobDefinitionRepository.GetByIdAsync(run.JobDefinitionId,ct);
-        
+        var definition = await _jobDefinitionRepository.GetByIdAsync(run.JobDefinitionId, ct);
+
         if (definition is null)
             throw new InvalidOperationException($"Job definition '{run.JobDefinitionId}' was not found.");
-        
+
         // Create process
         var psi = new ProcessStartInfo
         {
@@ -44,51 +44,47 @@ public class LocalJobRunner : ILocalJobRunner
             UseShellExecute = false,
             CreateNoWindow = true
         };
-        
-        var process = new Process
-        {
-            StartInfo = psi,
-            EnableRaisingEvents = true
-        };
-        var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        
+
+        using var process = new Process();
+        process.StartInfo = psi;
+        process.EnableRaisingEvents = true;
+
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        if (!process.Start())
+            throw new InvalidOperationException("Process failed to start.");
+
+        var handle = new RunningJobHandle(process, linkedCts);
+
+        if (!_runningJobRegistry.TryRegister(runId, handle))
+            throw new InvalidOperationException($"Run '{runId}' is already registered as running.");
         try
         {
-            if (!process.Start())
-                throw new InvalidOperationException("Process failed to start.");
-            
-            var handle = new RunningJobHandle(process, linkedCts);
-            
-            if (!_runningJobRegistry.TryRegister(runId, handle))
-                throw new InvalidOperationException($"Run '{runId}' is already registered as running.");
-            
             run.MarkRunning(_clock.UtcNow);
-            await _jobRunRepository.UpdateAsync(run,ct);
+            await _jobRunRepository.UpdateAsync(run, ct);
             StartedRunIds.Add(runId);
+
             await process.WaitForExitAsync(ct);
-            
+            var stdErr = await process.StandardError.ReadToEndAsync(ct);
             var refreshedRun = await _jobRunRepository.GetByIdAsync(runId, ct);
             if (refreshedRun is null)
                 throw new InvalidOperationException($"Run '{runId}' was not found after process exit.");
 
             if (refreshedRun.RunStatus == RunStatus.Cancelled)
                 return;
-            
+
             if (process.ExitCode == 0)
-                run.MarkSucceeded(_clock.UtcNow, process.ExitCode);
+                refreshedRun.MarkSucceeded(_clock.UtcNow, process.ExitCode);
             else
-                run.MarkFailed(_clock.UtcNow, $"Process exited with code {process.ExitCode}.", process.ExitCode);
-            await _jobRunRepository.UpdateAsync(run,ct);
-        }
-        catch (Exception e)
-        {
-            throw;
+            {
+                var error = !string.IsNullOrEmpty(stdErr) ? stdErr : $"Process exited with code {process.ExitCode}.";
+                refreshedRun.MarkFailed(_clock.UtcNow, error, process.ExitCode);
+            }
+
+            await _jobRunRepository.UpdateAsync(refreshedRun, ct);
         }
         finally
         {
             _runningJobRegistry.TryRemove(runId, out _);
-            linkedCts.Dispose();
-            process.Dispose();
         }
     }
 
@@ -102,25 +98,23 @@ public class LocalJobRunner : ILocalJobRunner
 
         if (!_runningJobRegistry.TryGet(runId, out var handle) || handle is null)
             throw new InvalidOperationException($"Run '{runId}' is not currently running.");
-
+        
+        run.MarkCancelled(_clock.UtcNow, "Cancelled");
+        CancelledRunIds.Add(runId);
+        await _jobRunRepository.UpdateAsync(run, ct);
+        
         try
         {
             if (!handle.Process.HasExited)
             {
-                handle.Cancellation.Cancel();
                 handle.Process.Kill(entireProcessTree: true);
-                await handle.Process.WaitForExitAsync(ct);
+                await handle.Process.WaitForExitAsync(CancellationToken.None);
             }
-
-            run.MarkCancelled(_clock.UtcNow, "Cancelled");
-            CancelledRunIds.Add(runId);
-            await _jobRunRepository.UpdateAsync(run, ct);
         }
         finally
         {
             _runningJobRegistry.TryRemove(runId, out _);
-            handle.Cancellation.Dispose();
-            handle.Process.Dispose();
         }
+    
     }
 }

@@ -105,6 +105,47 @@ public class JobRunnerTest
         var isRunStillInRegistry = registry.TryGet(run.Id, out _);
         Assert.False(isRunStillInRegistry);
     }
+    
+    [Fact]
+    public async Task LOCAL_RUNNER_START_SHOULD_NOT_OVERWRITE_CANCELLED_STATUS_AFTER_PROCESS_EXIT()
+    {
+        var jobDefinitionId = JobDefinitionId.New();
+        var jobDefinition = new JobDefinition(jobDefinitionId, "Sleep", "sleep 10", 0);
+        var definitionRepo = new JobDefinitionRepository([jobDefinition]);
+
+        var createdAt = new DateTimeOffset(2016, 01, 01, 0, 0, 0, TimeSpan.Zero);
+        var run = CreateRunInState(jobDefinitionId, RunStatus.Pending, createdAt);
+        var runRepo = new JobRunRepository([run]);
+
+        var clock = new FakeClock
+        {
+            UtcNow = DateTimeOffset.UtcNow
+        };
+
+        var registry = new InMemoryRunningJobRegistry();
+        var runner = new LocalJobRunner(runRepo, definitionRepo, clock, registry);
+
+        var ct = CancellationToken.None;
+        var startTask = runner.StartAsync(run.Id, ct);
+
+        await WaitUntilAsync(async () =>
+        {
+            var current = await runRepo.GetByIdAsync(run.Id, ct);
+            return current?.RunStatus == RunStatus.Running;
+        }, TimeSpan.FromSeconds(2));
+
+        var inRegistry = registry.TryGet(run.Id, out _);
+        Assert.True(inRegistry);
+
+        await runner.CancelAsync(run.Id, ct);
+        await startTask;
+
+        var refreshedRun = await runRepo.GetByIdAsync(run.Id, ct);
+
+        Assert.NotNull(refreshedRun);
+        Assert.Equal(RunStatus.Cancelled, refreshedRun!.RunStatus);
+    }
+    
     private static async Task WaitUntilAsync(Func<Task<bool>> condition, TimeSpan timeout)
     {
         var deadline = DateTime.UtcNow + timeout;
