@@ -33,7 +33,8 @@ public class LocalJobRunner : ILocalJobRunner
         
         if (definition is null)
             throw new InvalidOperationException($"Job definition '{run.JobDefinitionId}' was not found.");
-        // Start le vrai travail
+        
+        // Create process
         var psi = new ProcessStartInfo
         {
             FileName = "/bin/bash",
@@ -49,8 +50,8 @@ public class LocalJobRunner : ILocalJobRunner
             StartInfo = psi,
             EnableRaisingEvents = true
         };
-        
         var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        
         try
         {
             if (!process.Start())
@@ -63,9 +64,16 @@ public class LocalJobRunner : ILocalJobRunner
             
             run.MarkRunning(_clock.UtcNow);
             await _jobRunRepository.UpdateAsync(run,ct);
-            
             StartedRunIds.Add(runId);
             await process.WaitForExitAsync(ct);
+            
+            var refreshedRun = await _jobRunRepository.GetByIdAsync(runId, ct);
+            if (refreshedRun is null)
+                throw new InvalidOperationException($"Run '{runId}' was not found after process exit.");
+
+            if (refreshedRun.RunStatus == RunStatus.Cancelled)
+                return;
+            
             if (process.ExitCode == 0)
                 run.MarkSucceeded(_clock.UtcNow, process.ExitCode);
             else
@@ -87,12 +95,32 @@ public class LocalJobRunner : ILocalJobRunner
     public async Task CancelAsync(JobRunId runId, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
+
         var run = await _jobRunRepository.GetByIdAsync(runId, ct);
-        ArgumentNullException.ThrowIfNull(run);
-        // cancel le vrai travail
-        
-        run.MarkCancelled(_clock.UtcNow,"Cancelled");
-        CancelledRunIds.Add(runId);
-        await _jobRunRepository.UpdateAsync(run,ct);
+        if (run is null)
+            throw new InvalidOperationException($"Run '{runId}' was not found.");
+
+        if (!_runningJobRegistry.TryGet(runId, out var handle) || handle is null)
+            throw new InvalidOperationException($"Run '{runId}' is not currently running.");
+
+        try
+        {
+            if (!handle.Process.HasExited)
+            {
+                handle.Cancellation.Cancel();
+                handle.Process.Kill(entireProcessTree: true);
+                await handle.Process.WaitForExitAsync(ct);
+            }
+
+            run.MarkCancelled(_clock.UtcNow, "Cancelled");
+            CancelledRunIds.Add(runId);
+            await _jobRunRepository.UpdateAsync(run, ct);
+        }
+        finally
+        {
+            _runningJobRegistry.TryRemove(runId, out _);
+            handle.Cancellation.Dispose();
+            handle.Process.Dispose();
+        }
     }
 }

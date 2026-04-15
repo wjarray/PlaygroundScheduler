@@ -7,7 +7,6 @@ using PlaygroundScheduler.Engine.Services;
 
 namespace PlaygroundScheduler.Engine.Tests;
 
-
 public class JobRunServiceTest
 {
     [Fact]
@@ -350,7 +349,7 @@ public class JobRunServiceTest
     }
     
     [Fact]
-    public async Task RUNNER_SHOULD_START_ACTUAL_PROCESS_RUN()
+    public async Task LOCAL_RUNNER_START_SHOULD_MARK_RUN_AS_SUCCEEDED_WHEN_PROCESS_EXITS_WITH_CODE_0()
     {
         // ARRANGE
         // Create job definition with id available, in repo
@@ -384,8 +383,109 @@ public class JobRunServiceTest
         Assert.NotNull(run);
         Assert.Equal(jobDefinitionId, run.JobDefinitionId);
         Assert.Equal(clock.UtcNow, run.CreatedAt);
+        Assert.Equal(RunStatus.Succeeded,run.RunStatus);
     }
     
+    [Fact]
+    public async Task LOCAL_RUNNER_START_SHOULD_MARK_RUN_AS_FAILED_WHEN_PROCESS_EXITS_WITH_CODE_NON_0()
+    {
+        // ARRANGE
+        // Create job definition with id available, in repo
+        var jobDefinitionId = JobDefinitionId.New();
+        var jobDefinition = new JobDefinition(jobDefinitionId, "Hello World", "exit 2", 0);
+        var definitionRepo = new JobDefinitionRepository([jobDefinition]);
+        
+        // Create run repo empty
+        var runRepo = new JobRunRepository();
+        var clock = new FakeClock()
+        {
+            UtcNow = DateTimeOffset.UtcNow
+        };
+
+        var registry = new InMemoryRunningJobRegistry();
+        // Create job runner
+        var runner = new LocalJobRunner(runRepo,definitionRepo,clock,registry);
+        // Create job runner service
+        var jobRunnerService = new JobRunService(definitionRepo,runRepo,runner,clock);
+        
+        // ACT
+        // Create run
+        var runId = await jobRunnerService.CreateRunAsync(jobDefinition.DefinitionId);
+        
+        await jobRunnerService.StartRunAsync(runId);
+        // Retrieve created run
+        var run = await runRepo.GetByIdAsync(runId);
+        
+        
+        // ASSERT should be in pending status
+        Assert.NotNull(run);
+        Assert.Equal(jobDefinitionId, run.JobDefinitionId);
+        Assert.Equal(clock.UtcNow, run.CreatedAt);
+        Assert.Equal(RunStatus.Failed,run.RunStatus);
+        Assert.Equal(2,run.ExitCode);
+        
+    }
+
+    [Fact]
+    public async Task LOCAL_RUNNER_START_SHOULD_MARK_RUN_AS_CANCELLED_WHEN_CANCELLED_IS_FIRED()
+    {
+        // ARRANGE
+        // Create job definition with id available, in repo
+        var jobDefinitionId = JobDefinitionId.New();
+        var jobDefinition = new JobDefinition(jobDefinitionId, "SLEEP10", "sleep 10", 0);
+        var definitionRepo = new JobDefinitionRepository([jobDefinition]);
+        
+        // Create run repo empty
+        var runRepo = new JobRunRepository();
+        var clock = new FakeClock()
+        {
+            UtcNow = DateTimeOffset.UtcNow
+        };
+
+        var registry = new InMemoryRunningJobRegistry();
+        // Create job runner
+        var runner = new LocalJobRunner(runRepo,definitionRepo,clock,registry);
+        // Create job runner service
+        var jobRunnerService = new JobRunService(definitionRepo,runRepo,runner,clock);
+        
+        // ACT
+        // Create run
+        var runId = await jobRunnerService.CreateRunAsync(jobDefinition.DefinitionId); 
+        _ = jobRunnerService.StartRunAsync(runId,CancellationToken.None);
+        
+        await WaitUntilAsync(async () =>
+        {
+            var current = await runRepo.GetByIdAsync(runId);
+            if (current?.RunStatus == RunStatus.Running)
+            {
+                _ = jobRunnerService.CancelRunAsync(runId, CancellationToken.None);
+                return true;
+            }
+            return false;
+        }, TimeSpan.FromSeconds(2));
+        
+        var run = await runRepo.GetByIdAsync(runId);
+        
+        // ASSERT should be in pending status
+        Assert.NotNull(run);
+        Assert.Equal(jobDefinitionId, run.JobDefinitionId);
+        Assert.Equal(RunStatus.Cancelled,run.RunStatus);
+    }
+
+    private static async Task WaitUntilAsync(Func<Task<bool>> condition, TimeSpan timeout)
+    {
+        var deadline = DateTime.UtcNow + timeout;
+
+        while (DateTime.UtcNow < deadline)
+        {
+            if (await condition())
+                return;
+
+            await Task.Delay(50);
+        }
+
+        throw new TimeoutException("Condition was not met within the expected timeout.");
+    }
     private static JobRun CreateRunInState(JobRunId runId, JobDefinitionId definitionId, RunStatus runStatus, DateTimeOffset pCreatedAt,DateTimeOffset? pStartedAt, DateTimeOffset? pEndedAt)
     {
         var run = new JobRun(runId, definitionId, pCreatedAt);
