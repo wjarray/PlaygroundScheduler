@@ -19,13 +19,15 @@ It can be :
 This simple separation enables a more reliable design upon **asynchronous call** and a simple **State Machine**  that we can enrich as needed.
 It enables the use of better managed repositories for data persistence :
   - **JobDefinitionRepository** which is basically a store of all the Job the we can run using our system.
-  - **JobRunRepository** which is a store for all occurences of our jobs.
+  - **JobRunRepository** which is a store for all occurences of our jobs and their final State.
 
 Using this design, we create a stable and durable source of data.( i.e : that can be used after our Scheduler shuts down )
 As for now, we don't really have a persistence layer, the reposity is meant to provide the mecanism to retrieve stable data but the actual persistence layer ( a DB or whatever )
 isn't yet implemented. 
 We can run a Job using their definition retrieved using our repository and retrieve data related to the actual occurence of the run.
 
+Upon runtime, the Scheduler make uses of a registry to monitor the actual activities of runs.
+The registry acts the same way as a store but only for currently running tasks and is updated on the fly.
 
 
 
