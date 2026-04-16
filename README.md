@@ -22,7 +22,7 @@ It enables the use of better managed repositories for data persistence :
   - **JobRunRepository** which is a store for all occurences of our jobs.
 
 Using this design, we create a stable and durable source of data.( i.e : that can be used after our Scheduler shuts down )
-As for now, we don't really have a persistence layer, the reposity is meant to provided the mecanism to retrieve stable data but the actual persistence layer ( a DB or whatever )
+As for now, we don't really have a persistence layer, the reposity is meant to provide the mecanism to retrieve stable data but the actual persistence layer ( a DB or whatever )
 isn't yet implemented. 
 We can run a Job using their definition retrieved using our repository and retrieve data related to the actual occurence of the run.
 
