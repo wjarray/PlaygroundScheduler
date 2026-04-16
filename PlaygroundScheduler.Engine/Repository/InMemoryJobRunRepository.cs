@@ -2,15 +2,15 @@ using PlaygroundScheduler.Engine.Domain.Identity;
 
 namespace PlaygroundScheduler.Engine.Repository;
 
-public class JobRunRepository : IJobRunRepository
+public class InMemoryJobRunRepository : IJobRunRepository
 {
     private readonly List<JobRun> _jobRuns = new List<JobRun>();
     
-    public JobRunRepository()
+    public InMemoryJobRunRepository()
     {
         
     }
-    public JobRunRepository(IEnumerable<JobRun>? seed = null)
+    public InMemoryJobRunRepository(IEnumerable<JobRun>? seed = null)
     {
         _jobRuns = seed?.ToList() ?? new List<JobRun>();
     }

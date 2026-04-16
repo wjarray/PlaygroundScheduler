@@ -2,6 +2,7 @@ using System.Diagnostics;
 using PlaygroundScheduler.Engine.Domain.Identity;
 using PlaygroundScheduler.Engine.Registry;
 using PlaygroundScheduler.Engine.Repository;
+using PlaygroundScheduler.Engine.Store;
 
 namespace PlaygroundScheduler.Engine.Runner;
 
@@ -14,14 +15,18 @@ public class LocalJobRunner : ILocalJobRunner
     private readonly IJobDefinitionRepository _jobDefinitionRepository;
     private readonly IRunningJobRegistry _runningJobRegistry;
     private readonly IClock _clock;
+    private readonly IJobRunOutputStore _jobRunOutputStore;
+    
 
     public LocalJobRunner(IJobRunRepository jobRunRepository, IJobDefinitionRepository jobDefinitionRepository,
-        IClock clock, IRunningJobRegistry runningJobRegistry)
+        IClock clock, IRunningJobRegistry runningJobRegistry, IJobRunOutputStore jobRunOutputStore)
     {
         _jobRunRepository = jobRunRepository;
         _jobDefinitionRepository = jobDefinitionRepository;
         _clock = clock;
         _runningJobRegistry = runningJobRegistry;
+        _jobRunOutputStore= jobRunOutputStore;
+        
     }
 
     public async Task StartAsync(JobRunId runId, CancellationToken ct = default)
@@ -73,7 +78,9 @@ public class LocalJobRunner : ILocalJobRunner
                 return;
 
             if (process.ExitCode == 0)
+            {
                 refreshedRun.MarkSucceeded(_clock.UtcNow, process.ExitCode);
+            }
             else
             {
                 var error = !string.IsNullOrEmpty(stdErr) ? stdErr : $"Process exited with code {process.ExitCode}.";
@@ -115,6 +122,5 @@ public class LocalJobRunner : ILocalJobRunner
         {
             _runningJobRegistry.TryRemove(runId, out _);
         }
-    
     }
 }

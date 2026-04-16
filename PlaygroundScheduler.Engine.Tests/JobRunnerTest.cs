@@ -19,12 +19,12 @@ public class JobRunnerTest
         // Create job definition with id available, in repo
         var jobDefinitionId = JobDefinitionId.New();
         var jobDefinition = new JobDefinition(jobDefinitionId, "Hello World", "echo 'Hello World", 0);
-        var definitionRepo = new JobDefinitionRepository([jobDefinition]);
+        var definitionRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
         var createdAt = new DateTimeOffset(2016, 01, 01, 0, 0, 0, TimeSpan.Zero);
 
         var run = CreateRunInState(jobDefinitionId,status,createdAt);
         // Create run repo empty
-        var runRepo = new JobRunRepository([run]);
+        var runRepo = new InMemoryJobRunRepository([run]);
         var clock = new FakeClock()
         {
             UtcNow = DateTimeOffset.UtcNow
@@ -49,12 +49,12 @@ public class JobRunnerTest
             // Create job definition with id available, in repo
             var jobDefinitionId = JobDefinitionId.New();
             var jobDefinition = new JobDefinition(jobDefinitionId, "Hello World", "echo 'Hello World", 0);
-            var definitionRepo = new JobDefinitionRepository([jobDefinition]);
+            var definitionRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
             var createdAt = new DateTimeOffset(2016, 01, 01, 0, 0, 0, TimeSpan.Zero);
     
             var run = CreateRunInState(jobDefinitionId,status,createdAt);
             // Create run repo empty
-            var runRepo = new JobRunRepository([run]);
+            var runRepo = new InMemoryJobRunRepository([run]);
             var clock = new FakeClock()
             {
                 UtcNow = DateTimeOffset.UtcNow
@@ -74,12 +74,12 @@ public class JobRunnerTest
         // Create job definition with id available, in repo
         var jobDefinitionId = JobDefinitionId.New();
         var jobDefinition = new JobDefinition(jobDefinitionId, "Hello World", "sleep 10", 0);
-        var definitionRepo = new JobDefinitionRepository([jobDefinition]);
+        var definitionRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
         var createdAt = new DateTimeOffset(2016, 01, 01, 0, 0, 0, TimeSpan.Zero);
     
         var run = CreateRunInState(jobDefinitionId,RunStatus.Pending,createdAt);
         // Create run repo empty
-        var runRepo = new JobRunRepository([run]);
+        var runRepo = new InMemoryJobRunRepository([run]);
         var clock = new FakeClock()
         {
             UtcNow = DateTimeOffset.UtcNow
@@ -111,11 +111,11 @@ public class JobRunnerTest
     {
         var jobDefinitionId = JobDefinitionId.New();
         var jobDefinition = new JobDefinition(jobDefinitionId, "Sleep", "sleep 10", 0);
-        var definitionRepo = new JobDefinitionRepository([jobDefinition]);
+        var definitionRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
 
         var createdAt = new DateTimeOffset(2016, 01, 01, 0, 0, 0, TimeSpan.Zero);
         var run = CreateRunInState(jobDefinitionId, RunStatus.Pending, createdAt);
-        var runRepo = new JobRunRepository([run]);
+        var runRepo = new InMemoryJobRunRepository([run]);
 
         var clock = new FakeClock
         {
@@ -146,6 +146,38 @@ public class JobRunnerTest
         Assert.Equal(RunStatus.Cancelled, refreshedRun!.RunStatus);
     }
     
+    [Fact]
+    public async Task DOUBLE_START_SHOULD_NOT_RUN_THE_LAST_ATTEMPT()
+    {
+        var jobDefinitionId = JobDefinitionId.New();
+        var jobDefinition = new JobDefinition(jobDefinitionId, "Sleep", "sleep 10", 0);
+        var definitionRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
+
+        var createdAt = new DateTimeOffset(2016, 01, 01, 0, 0, 0, TimeSpan.Zero);
+        var run = CreateRunInState(jobDefinitionId, RunStatus.Pending, createdAt);
+        var runRepo = new InMemoryJobRunRepository([run]);
+
+        var clock = new FakeClock
+        {
+            UtcNow = DateTimeOffset.UtcNow
+        };
+
+        var registry = new InMemoryRunningJobRegistry();
+        var runner = new LocalJobRunner(runRepo, definitionRepo, clock, registry);
+
+        var ct = CancellationToken.None;
+        var startTask = runner.StartAsync(run.Id, ct);
+
+        await WaitUntilAsync(async () =>
+        {
+            var current = await runRepo.GetByIdAsync(run.Id, ct);
+            return current?.RunStatus == RunStatus.Running;
+        }, TimeSpan.FromSeconds(2));
+        
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => runner.StartAsync(run.Id, ct));
+    }
+    
     private static async Task WaitUntilAsync(Func<Task<bool>> condition, TimeSpan timeout)
     {
         var deadline = DateTime.UtcNow + timeout;
@@ -160,6 +192,7 @@ public class JobRunnerTest
 
         throw new TimeoutException("Condition was not met within the expected timeout.");
     }
+    
     public JobRun CreateRunInState(JobDefinitionId jobDefinitionId,RunStatus runStatus, DateTimeOffset pCreatedAt)
     {
         var run = new JobRun(JobRunId.New(), jobDefinitionId, pCreatedAt);
