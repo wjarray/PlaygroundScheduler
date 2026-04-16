@@ -14,6 +14,8 @@ In another hand, a transitory data can be a state i.e a job that does ' say hell
 
 Those two types of data should be stored somehow in our system, but they should not be managed in the same objet because **they do not keep the same value over time in our domain.**
 
+!!! : A transitory data can be stored, and can still keep relevance over time BUT we have to better design our app and modelize the domain we want to, we have to design objects that stay true to their own nature as much as possible. 
+We want to define **invariant** which have **to stay true in all valid states of our app** and build on top a reliable system which can rely on **transitiory data** to keep our system in a valid state.
 
 A process is encapsulated in a domain object Job that we can manage in C# .NET environment.
 A **Job** is basically a **definition** which encapsulates no state it only as **intrinsic value** :
@@ -31,9 +33,6 @@ It can be :
 
 
 This simple separation enables a more reliable design upon **asynchronous call** and a simple **State Machine** that we can enrich as needed.
-Depending on data a
-
-
 
 It enables the use of better managed repositories for data persistence :
   - **JobDefinitionRepository** which is basically a store of all the Job the we can run using our system.
