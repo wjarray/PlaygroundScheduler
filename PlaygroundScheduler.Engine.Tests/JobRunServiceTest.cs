@@ -4,6 +4,7 @@ using PlaygroundScheduler.Engine.Registry;
 using PlaygroundScheduler.Engine.Repository;
 using PlaygroundScheduler.Engine.Runner;
 using PlaygroundScheduler.Engine.Services;
+using PlaygroundScheduler.Engine.Store;
 
 namespace PlaygroundScheduler.Engine.Tests;
 
@@ -365,8 +366,10 @@ public class JobRunServiceTest
         };
 
         var registry = new InMemoryRunningJobRegistry();
+        var outputStore = new InMemoryJobRunOutputStore();
+        
         // Create job runner
-        var runner = new LocalJobRunner(runRepo,definitionRepo,clock,registry);
+        var runner = new LocalJobRunner(runRepo,definitionRepo,clock,registry,outputStore);
         // Create job runner service
         var jobRunnerService = new JobRunService(definitionRepo,runRepo,runner,clock);
         
@@ -403,8 +406,9 @@ public class JobRunServiceTest
         };
 
         var registry = new InMemoryRunningJobRegistry();
+        var outputStore = new InMemoryJobRunOutputStore();
         // Create job runner
-        var runner = new LocalJobRunner(runRepo,definitionRepo,clock,registry);
+        var runner = new LocalJobRunner(runRepo,definitionRepo,clock,registry,outputStore);
         // Create job runner service
         var jobRunnerService = new JobRunService(definitionRepo,runRepo,runner,clock);
         
@@ -443,8 +447,9 @@ public class JobRunServiceTest
         };
 
         var registry = new InMemoryRunningJobRegistry();
+        var outputStore = new InMemoryJobRunOutputStore();
         // Create job runner
-        var runner = new LocalJobRunner(runRepo,definitionRepo,clock,registry);
+        var runner = new LocalJobRunner(runRepo,definitionRepo,clock,registry, outputStore);
         // Create job runner service
         var jobRunnerService = new JobRunService(definitionRepo,runRepo,runner,clock);
         

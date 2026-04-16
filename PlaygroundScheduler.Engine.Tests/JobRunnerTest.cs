@@ -2,6 +2,7 @@ using PlaygroundScheduler.Engine.Domain.Identity;
 using PlaygroundScheduler.Engine.Registry;
 using PlaygroundScheduler.Engine.Repository;
 using PlaygroundScheduler.Engine.Runner;
+using PlaygroundScheduler.Engine.Store;
 
 namespace PlaygroundScheduler.Engine.Tests;
 
@@ -32,7 +33,8 @@ public class JobRunnerTest
 
         var registry = new InMemoryRunningJobRegistry();
         // Create job runner
-        var runner = new LocalJobRunner(runRepo,definitionRepo,clock,registry);
+        var outputStore = new InMemoryJobRunOutputStore();
+        var runner = new LocalJobRunner(runRepo,definitionRepo,clock,registry,outputStore);
 
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => runner.StartAsync(run.Id));
@@ -62,7 +64,9 @@ public class JobRunnerTest
     
             var registry = new InMemoryRunningJobRegistry();
             // Create job runner
-            var runner = new LocalJobRunner(runRepo,definitionRepo,clock,registry);
+            var outputStore = new InMemoryJobRunOutputStore();
+            
+            var runner = new LocalJobRunner(runRepo,definitionRepo,clock,registry,outputStore);
     
             await Assert.ThrowsAsync<InvalidOperationException>(() => runner.CancelAsync(run.Id));
         }
@@ -86,9 +90,10 @@ public class JobRunnerTest
         };
     
         var registry = new InMemoryRunningJobRegistry();
+        var outputStore = new InMemoryJobRunOutputStore();
         
         // Create job runnerx
-        var runner = new LocalJobRunner(runRepo,definitionRepo,clock,registry);
+        var runner = new LocalJobRunner(runRepo,definitionRepo,clock,registry,outputStore);
         CancellationToken ct = CancellationToken.None;
         var startedRun= runner.StartAsync(run.Id,ct);
 
@@ -123,7 +128,8 @@ public class JobRunnerTest
         };
 
         var registry = new InMemoryRunningJobRegistry();
-        var runner = new LocalJobRunner(runRepo, definitionRepo, clock, registry);
+        var outputStore = new InMemoryJobRunOutputStore();
+        var runner = new LocalJobRunner(runRepo, definitionRepo, clock, registry,outputStore);
 
         var ct = CancellationToken.None;
         var startTask = runner.StartAsync(run.Id, ct);
@@ -163,7 +169,8 @@ public class JobRunnerTest
         };
 
         var registry = new InMemoryRunningJobRegistry();
-        var runner = new LocalJobRunner(runRepo, definitionRepo, clock, registry);
+        var outputStore = new InMemoryJobRunOutputStore();
+        var runner = new LocalJobRunner(runRepo, definitionRepo, clock, registry,outputStore);
 
         var ct = CancellationToken.None;
         var startTask = runner.StartAsync(run.Id, ct);
