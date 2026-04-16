@@ -32,10 +32,11 @@ public class LocalJobRunner : ILocalJobRunner
     public async Task StartAsync(JobRunId runId, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
+        
         var run = await _jobRunRepository.GetByIdAsync(runId, ct);
         ArgumentNullException.ThrowIfNull(run);
+        
         var definition = await _jobDefinitionRepository.GetByIdAsync(run.JobDefinitionId, ct);
-
         if (definition is null)
             throw new InvalidOperationException($"Job definition '{run.JobDefinitionId}' was not found.");
 
@@ -67,9 +68,15 @@ public class LocalJobRunner : ILocalJobRunner
             run.MarkRunning(_clock.UtcNow);
             await _jobRunRepository.UpdateAsync(run, ct);
             StartedRunIds.Add(runId);
-
+            
+            var stdErrTask =  process.StandardError.ReadToEndAsync(ct);
+            var stdOutTask =  process.StandardOutput.ReadToEndAsync(ct);
+            
             await process.WaitForExitAsync(ct);
-            var stdErr = await process.StandardError.ReadToEndAsync(ct);
+            
+            var stdOut = await stdOutTask;
+            var stdErr = await stdErrTask;
+            
             var refreshedRun = await _jobRunRepository.GetByIdAsync(runId, ct);
             if (refreshedRun is null)
                 throw new InvalidOperationException($"Run '{runId}' was not found after process exit.");
@@ -86,8 +93,10 @@ public class LocalJobRunner : ILocalJobRunner
                 var error = !string.IsNullOrEmpty(stdErr) ? stdErr : $"Process exited with code {process.ExitCode}.";
                 refreshedRun.MarkFailed(_clock.UtcNow, error, process.ExitCode);
             }
-
+            
             await _jobRunRepository.UpdateAsync(refreshedRun, ct);
+            await _jobRunOutputStore.SaveAsync(new JobRunOutput(runId,stdOut,stdErr), ct);
+            
         }
         finally
         {

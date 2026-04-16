@@ -116,7 +116,6 @@ public class JobRunTest
     [Fact]
     public void RUNNING_RUN_CAN_BE_MARKED_CANCELLED()
     {
-        
         var createdAt = new DateTimeOffset(2016, 01, 01, 0, 0, 0, TimeSpan.Zero);
         var run = CreateRunInState(RunStatus.Running, createdAt);
         var startedAt = createdAt.AddHours(2);
@@ -125,7 +124,7 @@ public class JobRunTest
         Assert.Equal(RunStatus.Cancelled, run.RunStatus);
     }
     
-    public JobRun CreateRunInState(RunStatus runStatus, DateTimeOffset pCreatedAt)
+    private JobRun CreateRunInState(RunStatus runStatus, DateTimeOffset pCreatedAt)
     {
         var run = new JobRun(JobRunId.New(), JobDefinitionId.New(), pCreatedAt);
         var startedAt = pCreatedAt.AddHours(1);
