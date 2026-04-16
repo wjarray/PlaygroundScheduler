@@ -1,8 +1,8 @@
 using PlaygroundScheduler.Engine.Domain.Identity;
-using PlaygroundScheduler.Engine.Registry;
-using PlaygroundScheduler.Engine.Repository;
-using PlaygroundScheduler.Engine.Runner;
-using PlaygroundScheduler.Engine.Store;
+using PlaygroundScheduler.Engine.Infra.Registry;
+using PlaygroundScheduler.Engine.Infra.Repository;
+using PlaygroundScheduler.Engine.Infra.Runner;
+using PlaygroundScheduler.Engine.Infra.Store;
 
 namespace PlaygroundScheduler.Engine.Tests;
 

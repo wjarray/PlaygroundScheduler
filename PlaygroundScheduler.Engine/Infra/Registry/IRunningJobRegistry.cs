@@ -1,8 +1,7 @@
-using System.Diagnostics;
 using PlaygroundScheduler.Engine.Domain.Identity;
-using PlaygroundScheduler.Engine.Runner;
+using PlaygroundScheduler.Engine.Infra.Runner;
 
-namespace PlaygroundScheduler.Engine.Registry;
+namespace PlaygroundScheduler.Engine.Infra.Registry;
 
 public interface IRunningJobRegistry
 {

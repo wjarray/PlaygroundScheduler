@@ -1,6 +1,6 @@
 using PlaygroundScheduler.Engine.Domain.Identity;
 
-namespace PlaygroundScheduler.Engine.Store;
+namespace PlaygroundScheduler.Engine.Infra.Store;
 
 public class InMemoryJobRunOutputStore : IJobRunOutputStore
 {

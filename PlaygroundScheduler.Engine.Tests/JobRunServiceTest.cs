@@ -1,10 +1,10 @@
 using System.Diagnostics.Tracing;
 using PlaygroundScheduler.Engine.Domain.Identity;
-using PlaygroundScheduler.Engine.Registry;
-using PlaygroundScheduler.Engine.Repository;
-using PlaygroundScheduler.Engine.Runner;
+using PlaygroundScheduler.Engine.Infra.Registry;
+using PlaygroundScheduler.Engine.Infra.Repository;
+using PlaygroundScheduler.Engine.Infra.Runner;
+using PlaygroundScheduler.Engine.Infra.Store;
 using PlaygroundScheduler.Engine.Services;
-using PlaygroundScheduler.Engine.Store;
 
 namespace PlaygroundScheduler.Engine.Tests;
 

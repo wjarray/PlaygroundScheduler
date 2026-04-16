@@ -1,10 +1,10 @@
 using System.Diagnostics;
 using PlaygroundScheduler.Engine.Domain.Identity;
-using PlaygroundScheduler.Engine.Registry;
-using PlaygroundScheduler.Engine.Repository;
-using PlaygroundScheduler.Engine.Store;
+using PlaygroundScheduler.Engine.Infra.Registry;
+using PlaygroundScheduler.Engine.Infra.Repository;
+using PlaygroundScheduler.Engine.Infra.Store;
 
-namespace PlaygroundScheduler.Engine.Runner;
+namespace PlaygroundScheduler.Engine.Infra.Runner;
 
 public class LocalJobRunner : ILocalJobRunner
 {

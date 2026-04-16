@@ -1,6 +1,6 @@
 using PlaygroundScheduler.Engine.Domain.Identity;
-using PlaygroundScheduler.Engine.Repository;
-using PlaygroundScheduler.Engine.Runner;
+using PlaygroundScheduler.Engine.Infra.Repository;
+using PlaygroundScheduler.Engine.Infra.Runner;
 
 namespace PlaygroundScheduler.Engine.Services;
 
