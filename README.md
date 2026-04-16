@@ -31,7 +31,6 @@ It can be :
   - Faulted
   - Succeeded
 
-
 This simple separation enables a more reliable design upon **asynchronous call** and a simple **State Machine** that we can enrich as needed.
 
 It enables the use of better managed repositories for data persistence :
@@ -40,11 +39,19 @@ It enables the use of better managed repositories for data persistence :
 
 Using this design, we create a stable and durable source of data.( i.e : that can be used after our Scheduler shuts down )
 As for now, we don't really have a persistence layer, the reposity is meant to provide the mecanism to retrieve stable data but the actual persistence layer ( a DB or whatever )
-isn't yet implemented. 
-We can run a Job using their definition retrieved using our repository and retrieve data related to the actual occurence of the run.
+isn't yet implemented.
 
-Upon runtime, the Scheduler make uses of a registry to monitor the actual activities of runs. 
-The registry acts the same way as a store but only for currently running tasks and is updated on the fly.
+In our system, a job is managed by a **LocalRunner** which only task is to start a job or cancel it **at a certain time**. It's not an orchestrator, it's not a service, but only an internal C# .NET tool meant to separate concern, we don't want jobs to be launched haphazardly.
+
+This local runner furnishes the actual capabilities to **run** or **kill** the job and store it's reference with a relevant state in the appropriate repository.
+It provides a **handle** to get a status of the actual running job and store it in a registry.
+
+This design ensure that we have a composant only dedicated to monitor running jobs and transitory data pertaining to those running job during the whole app runtime.
+
+On top of that, we have a **JobService** service layer, meant to expose the capabilities of our **LocalJobRunner** and our **Repositories**.
+Using this API, we can get the relevant data without exposing much of the actual behaviour of our internal component and we enable composition to implement a much larger workflow.
+
+
 
  
 
