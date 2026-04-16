@@ -18,7 +18,7 @@ Those two types of data should be stored somehow in our system, but they should 
 We want to define **invariant** which have **to stay true in all valid states of our app** and build on top a reliable system which can rely on **transitiory data** to keep our system in a valid state.
 
 A process is encapsulated in a domain object Job that we can manage in C# .NET environment.
-A **Job** is basically a **definition** which encapsulates no state it only as **intrinsic value** :
+A **Job** is basically a **definition** which encapsulates no state it only has **intrinsic value** :
   - Name
   - CommandLine
   - MaxRetryCount ( basically its policy when runned )
