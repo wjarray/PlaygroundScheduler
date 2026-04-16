@@ -2,7 +2,7 @@ A simple Local Job Scheduler.
 
 This project is designed to capture the lifecycle of a process that we can launch locally.
 A process is encapsulated in a domain object Job that we can manage in C# .NET environment.
-A **Job** is basically a **definition** which encapsulates no state it only as **intrinseque value** :
+A **Job** is basically a **definition** which encapsulates no state it only as **intrinsic value** :
   - Name
   - CommandLine
   - MaxRetryCount ( basically its policy when runned )
