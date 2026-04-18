@@ -1,8 +1,9 @@
 using System.Diagnostics.Tracing;
 using PlaygroundScheduler.Engine.Domain.Identity;
-using PlaygroundScheduler.Engine.Registry;
-using PlaygroundScheduler.Engine.Repository;
-using PlaygroundScheduler.Engine.Runner;
+using PlaygroundScheduler.Engine.Infra.Registry;
+using PlaygroundScheduler.Engine.Infra.Repository;
+using PlaygroundScheduler.Engine.Infra.Runner;
+using PlaygroundScheduler.Engine.Infra.Store;
 using PlaygroundScheduler.Engine.Services;
 
 namespace PlaygroundScheduler.Engine.Tests;
@@ -16,10 +17,10 @@ public class JobRunServiceTest
         // Create job definition with id available, in repo
         var jobDefinitionId = JobDefinitionId.New();
         var jobDefinition = new JobDefinition(jobDefinitionId, "Hello World", "echo 'Hello World", 0);
-        var definitionRepo = new JobDefinitionRepository([jobDefinition]);
+        var definitionRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
         
         // Create run repo empty
-        var runRepo = new JobRunRepository();
+        var runRepo = new InMemoryJobRunRepository();
         var clock = new FakeClock()
         {
             UtcNow = new DateTimeOffset(2026, 4, 14, 10, 0, 0, TimeSpan.Zero)
@@ -49,8 +50,8 @@ public class JobRunServiceTest
     {
         // ARRANGE
         // Create empty job repo and empty run repo
-        var definitionRepo = new JobDefinitionRepository();
-        var runRepo = new JobRunRepository();
+        var definitionRepo = new InMemoryJobDefinitionRepository();
+        var runRepo = new InMemoryJobRunRepository();
         var clock = new FakeClock()
         {
             UtcNow = new DateTimeOffset(2026, 4, 14, 10, 0, 0, TimeSpan.Zero)
@@ -75,12 +76,12 @@ public class JobRunServiceTest
         // Arrange
         // Create job definition available in definition repo
         var jobDefinition = new JobDefinition(JobDefinitionId.New(),"NAME : THIS RUN IS PENDING UNTIL RUNNER STARTS IT","Pending command line",0);
-        var definitionRepo = new JobDefinitionRepository([jobDefinition]);
+        var definitionRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
 
         // Create a pending run available in run repo
         var createdAt = new DateTimeOffset(2026, 4, 14, 9, 0, 0, TimeSpan.Zero);
         var pendingRun = new JobRun(JobRunId.New(),jobDefinition.DefinitionId,createdAt);
-        var runRepo = new JobRunRepository([pendingRun]);
+        var runRepo = new InMemoryJobRunRepository([pendingRun]);
         
         var clock = new FakeClock()
         {
@@ -112,13 +113,13 @@ public class JobRunServiceTest
             "echo 'Hello World",
             0);
 
-        var jobRepo = new JobDefinitionRepository([jobDefinition]);
+        var jobRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
         
         var createdAt = new DateTimeOffset(2026, 4, 14, 9, 0, 0, TimeSpan.Zero);
         var pendingRun = new JobRun(JobRunId.New(),jobDefinition.DefinitionId,createdAt);
         
         // empty on purpose, run doesn't exist
-        var runRepo = new JobRunRepository();
+        var runRepo = new InMemoryJobRunRepository();
         var clock = new FakeClock()
         {
             UtcNow = new DateTimeOffset(2026, 4, 14, 10, 0, 0, TimeSpan.Zero)
@@ -143,12 +144,12 @@ public class JobRunServiceTest
             "echo 'Hello World'",
             0);
 
-        var jobRepo = new JobDefinitionRepository([jobDefinition]);
+        var jobRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
         var createdAt = new DateTimeOffset(2026, 4, 14, 9, 0, 0, TimeSpan.Zero);
         var inStatusRun = CreateRunInState(JobRunId.New(),jobDefinition.DefinitionId,status,createdAt,null,null);
         
         // empty on purpose, run doesn't exist
-        var runRepo = new JobRunRepository([inStatusRun]);
+        var runRepo = new InMemoryJobRunRepository([inStatusRun]);
         var clock = new FakeClock()
         {
             UtcNow = new DateTimeOffset(2026, 4, 14, 10, 0, 0, TimeSpan.Zero)
@@ -170,11 +171,11 @@ public class JobRunServiceTest
             "echo 'Hello World",
             0);
 
-        var jobRepo = new JobDefinitionRepository([jobDefinition]);
+        var jobRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
         var createdAt = new DateTimeOffset(2026, 4, 14, 9, 0, 0, TimeSpan.Zero);
         var pendingRun = CreateRunInState(JobRunId.New(),jobDefinition.DefinitionId,RunStatus.Pending,createdAt,null,null);
         
-        var runRepo = new JobRunRepository([pendingRun]);
+        var runRepo = new InMemoryJobRunRepository([pendingRun]);
         var clock = new FakeClock()
         {
             UtcNow = new DateTimeOffset(2026, 4, 14, 10, 0, 0, TimeSpan.Zero)
@@ -199,12 +200,12 @@ public class JobRunServiceTest
             "echo 'Hello World",
             0);
 
-        var jobRepo = new JobDefinitionRepository([jobDefinition]);
+        var jobRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
         var createdAt = new DateTimeOffset(2026, 4, 14, 9, 0, 0, TimeSpan.Zero);
         var startedAt = createdAt.AddHours(1);
         var startedRun = CreateRunInState(JobRunId.New(),jobDefinition.DefinitionId,RunStatus.Running,createdAt,startedAt,null);
         
-        var runRepo = new JobRunRepository([startedRun]);
+        var runRepo = new InMemoryJobRunRepository([startedRun]);
         var clock = new FakeClock()
         {
             UtcNow = new DateTimeOffset(2026, 4, 14, 10, 0, 0, TimeSpan.Zero)
@@ -232,12 +233,12 @@ public class JobRunServiceTest
             "echo 'Hello World",
             0);
 
-        var jobRepo = new JobDefinitionRepository([jobDefinition]);
+        var jobRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
         var createdAt = new DateTimeOffset(2026, 4, 14, 9, 0, 0, TimeSpan.Zero);
         var inStatusRun = CreateRunInState(JobRunId.New(),jobDefinition.DefinitionId,terminalStatus,createdAt,null,null);
         
         // empty on purpose, run doesn't exist
-        var runRepo = new JobRunRepository([inStatusRun]);
+        var runRepo = new InMemoryJobRunRepository([inStatusRun]);
         var clock = new FakeClock()
         {
             UtcNow = new DateTimeOffset(2026, 4, 14, 10, 0, 0, TimeSpan.Zero)
@@ -263,12 +264,12 @@ public class JobRunServiceTest
             "echo 'Hello World",
             0);
 
-        var jobRepo = new JobDefinitionRepository([jobDefinition]);
+        var jobRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
         var createdAt = new DateTimeOffset(2026, 4, 14, 9, 0, 0, TimeSpan.Zero);
         var inStatusRun = CreateRunInState(JobRunId.New(),jobDefinition.DefinitionId,runStatus,createdAt,null,null);
         
         // empty on purpose, run doesn't exist
-        var runRepo = new JobRunRepository();
+        var runRepo = new InMemoryJobRunRepository();
         var clock = new FakeClock()
         {
             UtcNow = new DateTimeOffset(2026, 4, 14, 10, 0, 0, TimeSpan.Zero)
@@ -296,11 +297,11 @@ public class JobRunServiceTest
            "echo 'Hello World",
            0);
 
-       var jobRepo = new JobDefinitionRepository([jobDefinition]);
+       var jobRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
        var createdAt = new DateTimeOffset(2026, 4, 14, 9, 0, 0, TimeSpan.Zero);
        var runInState = CreateRunInState(JobRunId.New(),jobDefinition.DefinitionId,status,createdAt,null,null);
         
-       var runRepo = new JobRunRepository([runInState]);
+       var runRepo = new InMemoryJobRunRepository([runInState]);
        var clock = new FakeClock()
        {
            UtcNow = new DateTimeOffset(2026, 4, 14, 10, 0, 0, TimeSpan.Zero)
@@ -329,12 +330,12 @@ public class JobRunServiceTest
             "echo 'Hello World",
             0);
 
-        var jobRepo = new JobDefinitionRepository([jobDefinition]);
+        var jobRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
         var createdAt = new DateTimeOffset(2026, 4, 14, 9, 0, 0, TimeSpan.Zero);
         
         var runInState = CreateRunInState(JobRunId.New(),jobDefinition.DefinitionId,status,createdAt,null,null);
         
-        var runRepo = new JobRunRepository([runInState,runInState,runInState,runInState,runInState]);
+        var runRepo = new InMemoryJobRunRepository([runInState,runInState,runInState,runInState,runInState]);
         var clock = new FakeClock()
         {
             UtcNow = new DateTimeOffset(2026, 4, 14, 10, 0, 0, TimeSpan.Zero)
@@ -355,18 +356,20 @@ public class JobRunServiceTest
         // Create job definition with id available, in repo
         var jobDefinitionId = JobDefinitionId.New();
         var jobDefinition = new JobDefinition(jobDefinitionId, "Hello World", "echo Hello World", 0);
-        var definitionRepo = new JobDefinitionRepository([jobDefinition]);
+        var definitionRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
         
         // Create run repo empty
-        var runRepo = new JobRunRepository();
+        var runRepo = new InMemoryJobRunRepository();
         var clock = new FakeClock()
         {
             UtcNow = DateTimeOffset.UtcNow
         };
 
         var registry = new InMemoryRunningJobRegistry();
+        var outputStore = new InMemoryJobRunOutputStore();
+        
         // Create job runner
-        var runner = new LocalJobRunner(runRepo,definitionRepo,clock,registry);
+        var runner = new LocalJobRunner(runRepo,definitionRepo,clock,registry,outputStore);
         // Create job runner service
         var jobRunnerService = new JobRunService(definitionRepo,runRepo,runner,clock);
         
@@ -393,18 +396,19 @@ public class JobRunServiceTest
         // Create job definition with id available, in repo
         var jobDefinitionId = JobDefinitionId.New();
         var jobDefinition = new JobDefinition(jobDefinitionId, "Hello World", "exit 2", 0);
-        var definitionRepo = new JobDefinitionRepository([jobDefinition]);
+        var definitionRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
         
         // Create run repo empty
-        var runRepo = new JobRunRepository();
+        var runRepo = new InMemoryJobRunRepository();
         var clock = new FakeClock()
         {
             UtcNow = DateTimeOffset.UtcNow
         };
 
         var registry = new InMemoryRunningJobRegistry();
+        var outputStore = new InMemoryJobRunOutputStore();
         // Create job runner
-        var runner = new LocalJobRunner(runRepo,definitionRepo,clock,registry);
+        var runner = new LocalJobRunner(runRepo,definitionRepo,clock,registry,outputStore);
         // Create job runner service
         var jobRunnerService = new JobRunService(definitionRepo,runRepo,runner,clock);
         
@@ -433,18 +437,19 @@ public class JobRunServiceTest
         // Create job definition with id available, in repo
         var jobDefinitionId = JobDefinitionId.New();
         var jobDefinition = new JobDefinition(jobDefinitionId, "SLEEP10", "sleep 10", 0);
-        var definitionRepo = new JobDefinitionRepository([jobDefinition]);
+        var definitionRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
         
         // Create run repo empty
-        var runRepo = new JobRunRepository();
+        var runRepo = new InMemoryJobRunRepository();
         var clock = new FakeClock()
         {
             UtcNow = DateTimeOffset.UtcNow
         };
 
         var registry = new InMemoryRunningJobRegistry();
+        var outputStore = new InMemoryJobRunOutputStore();
         // Create job runner
-        var runner = new LocalJobRunner(runRepo,definitionRepo,clock,registry);
+        var runner = new LocalJobRunner(runRepo,definitionRepo,clock,registry, outputStore);
         // Create job runner service
         var jobRunnerService = new JobRunService(definitionRepo,runRepo,runner,clock);
         

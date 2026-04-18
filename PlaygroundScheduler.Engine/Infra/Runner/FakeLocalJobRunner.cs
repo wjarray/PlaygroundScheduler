@@ -1,6 +1,6 @@
 using PlaygroundScheduler.Engine.Domain.Identity;
 
-namespace PlaygroundScheduler.Engine.Runner;
+namespace PlaygroundScheduler.Engine.Infra.Runner;
 
 public sealed class FakeLocalJobRunner : ILocalJobRunner
 {

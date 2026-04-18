@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace PlaygroundScheduler.Engine.Runner;
+namespace PlaygroundScheduler.Engine.Infra.Runner;
 
 public sealed class RunningJobHandle
 {

@@ -1,17 +1,17 @@
 using PlaygroundScheduler.Engine.Domain.Identity;
 
-namespace PlaygroundScheduler.Engine.Repository;
+namespace PlaygroundScheduler.Engine.Infra.Repository;
 
-public class JobDefinitionRepository : IJobDefinitionRepository
+public class InMemoryJobDefinitionRepository : IJobDefinitionRepository
 {
     private readonly List<JobDefinition> _jobDefinitions = new List<JobDefinition>();
 
-    public JobDefinitionRepository()
+    public InMemoryJobDefinitionRepository()
     {
         
     }
     
-    public JobDefinitionRepository(IEnumerable<JobDefinition>? seed = null)
+    public InMemoryJobDefinitionRepository(IEnumerable<JobDefinition>? seed = null)
     {
         _jobDefinitions = seed?.ToList() ?? new List<JobDefinition>();
     }

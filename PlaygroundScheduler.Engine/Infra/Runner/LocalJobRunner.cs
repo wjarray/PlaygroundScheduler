@@ -1,9 +1,10 @@
 using System.Diagnostics;
 using PlaygroundScheduler.Engine.Domain.Identity;
-using PlaygroundScheduler.Engine.Registry;
-using PlaygroundScheduler.Engine.Repository;
+using PlaygroundScheduler.Engine.Infra.Registry;
+using PlaygroundScheduler.Engine.Infra.Repository;
+using PlaygroundScheduler.Engine.Infra.Store;
 
-namespace PlaygroundScheduler.Engine.Runner;
+namespace PlaygroundScheduler.Engine.Infra.Runner;
 
 public class LocalJobRunner : ILocalJobRunner
 {
@@ -14,23 +15,28 @@ public class LocalJobRunner : ILocalJobRunner
     private readonly IJobDefinitionRepository _jobDefinitionRepository;
     private readonly IRunningJobRegistry _runningJobRegistry;
     private readonly IClock _clock;
+    private readonly IJobRunOutputStore _jobRunOutputStore;
+    
 
     public LocalJobRunner(IJobRunRepository jobRunRepository, IJobDefinitionRepository jobDefinitionRepository,
-        IClock clock, IRunningJobRegistry runningJobRegistry)
+        IClock clock, IRunningJobRegistry runningJobRegistry, IJobRunOutputStore jobRunOutputStore)
     {
         _jobRunRepository = jobRunRepository;
         _jobDefinitionRepository = jobDefinitionRepository;
         _clock = clock;
         _runningJobRegistry = runningJobRegistry;
+        _jobRunOutputStore= jobRunOutputStore;
+        
     }
 
     public async Task StartAsync(JobRunId runId, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
+        
         var run = await _jobRunRepository.GetByIdAsync(runId, ct);
         ArgumentNullException.ThrowIfNull(run);
+        
         var definition = await _jobDefinitionRepository.GetByIdAsync(run.JobDefinitionId, ct);
-
         if (definition is null)
             throw new InvalidOperationException($"Job definition '{run.JobDefinitionId}' was not found.");
 
@@ -62,9 +68,15 @@ public class LocalJobRunner : ILocalJobRunner
             run.MarkRunning(_clock.UtcNow);
             await _jobRunRepository.UpdateAsync(run, ct);
             StartedRunIds.Add(runId);
-
+            
+            var stdErrTask =  process.StandardError.ReadToEndAsync(ct);
+            var stdOutTask =  process.StandardOutput.ReadToEndAsync(ct);
+            
             await process.WaitForExitAsync(ct);
-            var stdErr = await process.StandardError.ReadToEndAsync(ct);
+            
+            var stdOut = await stdOutTask;
+            var stdErr = await stdErrTask;
+            
             var refreshedRun = await _jobRunRepository.GetByIdAsync(runId, ct);
             if (refreshedRun is null)
                 throw new InvalidOperationException($"Run '{runId}' was not found after process exit.");
@@ -73,14 +85,18 @@ public class LocalJobRunner : ILocalJobRunner
                 return;
 
             if (process.ExitCode == 0)
+            {
                 refreshedRun.MarkSucceeded(_clock.UtcNow, process.ExitCode);
+            }
             else
             {
                 var error = !string.IsNullOrEmpty(stdErr) ? stdErr : $"Process exited with code {process.ExitCode}.";
                 refreshedRun.MarkFailed(_clock.UtcNow, error, process.ExitCode);
             }
-
+            
             await _jobRunRepository.UpdateAsync(refreshedRun, ct);
+            await _jobRunOutputStore.SaveAsync(new JobRunOutput(runId,stdOut,stdErr), ct);
+            
         }
         finally
         {
@@ -115,6 +131,5 @@ public class LocalJobRunner : ILocalJobRunner
         {
             _runningJobRegistry.TryRemove(runId, out _);
         }
-    
     }
 }
