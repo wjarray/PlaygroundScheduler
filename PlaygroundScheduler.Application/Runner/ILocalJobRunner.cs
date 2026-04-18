@@ -1,6 +1,6 @@
-using PlaygroundScheduler.Engine.Domain.Identity;
+using PlaygroundScheduler.Domain.Identity;
 
-namespace PlaygroundScheduler.Engine.Infra.Runner;
+namespace PlaygroundScheduler.Application.Runner;
 
 public interface ILocalJobRunner
 {

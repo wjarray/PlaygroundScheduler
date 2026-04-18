@@ -1,7 +1,6 @@
+using PlaygroundScheduler.Domain.Identity;
 
-using PlaygroundScheduler.Engine.Domain.Identity;
-
-namespace PlaygroundScheduler.Engine.Infra.Repository;
+namespace PlaygroundScheduler.Application.Repository;
 
 public interface IJobRunRepository
 {

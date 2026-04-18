@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace PlaygroundScheduler.Engine.Domain.Identity;
+namespace PlaygroundScheduler.Domain.Identity;
 
 public sealed class JobDefinition
 {

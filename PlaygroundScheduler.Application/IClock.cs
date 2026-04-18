@@ -1,4 +1,4 @@
-namespace PlaygroundScheduler.Engine.Domain.Identity;
+namespace PlaygroundScheduler.Application;
 
 public interface IClock
 {

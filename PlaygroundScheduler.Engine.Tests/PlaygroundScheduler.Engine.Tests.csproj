@@ -20,6 +20,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\PlaygroundScheduler.Engine\PlaygroundScheduler.Engine.csproj" />
+      <ProjectReference Include="..\PlaygroundScheduler.Infrastructure.Runner\PlaygroundScheduler.Infrastructure.Runner.csproj" />
     </ItemGroup>
 
 </Project>

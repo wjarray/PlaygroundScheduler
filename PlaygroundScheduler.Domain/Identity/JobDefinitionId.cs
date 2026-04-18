@@ -1,4 +1,4 @@
-namespace PlaygroundScheduler.Engine.Domain.Identity;
+namespace PlaygroundScheduler.Domain.Identity;
 
 public readonly record struct JobDefinitionId(Guid Value)
 {

@@ -1,6 +1,6 @@
-using PlaygroundScheduler.Engine.Domain.Identity;
+using PlaygroundScheduler.Domain.Identity;
 
-namespace PlaygroundScheduler.Engine.Services;
+namespace PlaygroundScheduler.Application.Services;
 
 public interface IJobRunService
 {

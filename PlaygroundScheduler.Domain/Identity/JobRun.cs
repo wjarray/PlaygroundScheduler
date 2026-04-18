@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace PlaygroundScheduler.Engine.Domain.Identity;
+namespace PlaygroundScheduler.Domain.Identity;
 
 
 public sealed class JobRun
@@ -99,13 +99,4 @@ public sealed class JobRun
         if (RunStatus != RunStatus.Running)
             throw new InvalidOperationException($"Run must be running. Current status: {RunStatus}");
     }
-}
-
-public enum RunStatus
-{
-    Pending,
-    Running,
-    Cancelled,
-    Failed,
-    Succeeded
 }

@@ -1,10 +1,13 @@
 using System.Diagnostics;
-using PlaygroundScheduler.Engine.Domain.Identity;
-using PlaygroundScheduler.Engine.Infra.Registry;
-using PlaygroundScheduler.Engine.Infra.Repository;
+using PlaygroundScheduler.Application;
+using PlaygroundScheduler.Application.Ports;
+using PlaygroundScheduler.Application.Repository;
+using PlaygroundScheduler.Application.Runner;
+using PlaygroundScheduler.Domain.Identity;
 using PlaygroundScheduler.Engine.Infra.Store;
+using PlaygroundScheduler.Infrastructure.Runner.Registry;
 
-namespace PlaygroundScheduler.Engine.Infra.Runner;
+namespace PlaygroundScheduler.Infrastructure.Runner.Runner;
 
 public class LocalJobRunner : ILocalJobRunner
 {
@@ -16,17 +19,17 @@ public class LocalJobRunner : ILocalJobRunner
     private readonly IRunningJobRegistry _runningJobRegistry;
     private readonly IClock _clock;
     private readonly IJobRunOutputStore _jobRunOutputStore;
-    
+    private readonly IProcessStartInfoFactory _processStartInfoFactory;
 
     public LocalJobRunner(IJobRunRepository jobRunRepository, IJobDefinitionRepository jobDefinitionRepository,
-        IClock clock, IRunningJobRegistry runningJobRegistry, IJobRunOutputStore jobRunOutputStore)
+        IClock clock, IRunningJobRegistry runningJobRegistry, IJobRunOutputStore jobRunOutputStore,IProcessStartInfoFactory processStartInfoFactory)
     {
         _jobRunRepository = jobRunRepository;
         _jobDefinitionRepository = jobDefinitionRepository;
         _clock = clock;
         _runningJobRegistry = runningJobRegistry;
         _jobRunOutputStore= jobRunOutputStore;
-        
+        _processStartInfoFactory =  processStartInfoFactory;
     }
 
     public async Task StartAsync(JobRunId runId, CancellationToken ct = default)
@@ -39,17 +42,7 @@ public class LocalJobRunner : ILocalJobRunner
         var definition = await _jobDefinitionRepository.GetByIdAsync(run.JobDefinitionId, ct);
         if (definition is null)
             throw new InvalidOperationException($"Job definition '{run.JobDefinitionId}' was not found.");
-
-        // Create process
-        var psi = new ProcessStartInfo
-        {
-            FileName = "/bin/bash",
-            Arguments = $"-lc \"{definition.CommandLine}\"",
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        };
+        var psi = _processStartInfoFactory.Create(definition.CommandLine);
 
         using var process = new Process();
         process.StartInfo = psi;
@@ -118,18 +111,10 @@ public class LocalJobRunner : ILocalJobRunner
         run.MarkCancelled(_clock.UtcNow, "Cancelled");
         CancelledRunIds.Add(runId);
         await _jobRunRepository.UpdateAsync(run, ct);
-        
-        try
+
+        if (!handle.Process.HasExited)
         {
-            if (!handle.Process.HasExited)
-            {
-                handle.Process.Kill(entireProcessTree: true);
-                await handle.Process.WaitForExitAsync(CancellationToken.None);
-            }
-        }
-        finally
-        {
-            _runningJobRegistry.TryRemove(runId, out _);
+            handle.Process.Kill(entireProcessTree: true);
         }
     }
 }

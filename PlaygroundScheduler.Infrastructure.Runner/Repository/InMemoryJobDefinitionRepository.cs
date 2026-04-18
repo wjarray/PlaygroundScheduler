@@ -1,6 +1,7 @@
-using PlaygroundScheduler.Engine.Domain.Identity;
+using PlaygroundScheduler.Application.Repository;
+using PlaygroundScheduler.Domain.Identity;
 
-namespace PlaygroundScheduler.Engine.Infra.Repository;
+namespace PlaygroundScheduler.Infrastructure.Runner.Repository;
 
 public class InMemoryJobDefinitionRepository : IJobDefinitionRepository
 {

@@ -1,10 +1,13 @@
 using System.Diagnostics.Tracing;
-using PlaygroundScheduler.Engine.Domain.Identity;
-using PlaygroundScheduler.Engine.Infra.Registry;
-using PlaygroundScheduler.Engine.Infra.Repository;
-using PlaygroundScheduler.Engine.Infra.Runner;
+using PlaygroundScheduler.Application;
+using PlaygroundScheduler.Application.Services;
+using PlaygroundScheduler.Domain.Identity;
 using PlaygroundScheduler.Engine.Infra.Store;
-using PlaygroundScheduler.Engine.Services;
+using PlaygroundScheduler.Engine.Tests.Helpers;
+using PlaygroundScheduler.Infrastructure.Runner.Ports;
+using PlaygroundScheduler.Infrastructure.Runner.Registry;
+using PlaygroundScheduler.Infrastructure.Runner.Repository;
+using PlaygroundScheduler.Infrastructure.Runner.Runner;
 
 namespace PlaygroundScheduler.Engine.Tests;
 
@@ -16,7 +19,9 @@ public class JobRunServiceTest
         // ARRANGE
         // Create job definition with id available, in repo
         var jobDefinitionId = JobDefinitionId.New();
-        var jobDefinition = new JobDefinition(jobDefinitionId, "Hello World", "echo 'Hello World", 0);
+        var command = CrossPlatformTestCommands.Succeed();
+        
+        var jobDefinition = new JobDefinition(jobDefinitionId, "Success", command, 0);
         var definitionRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
         
         // Create run repo empty
@@ -108,9 +113,11 @@ public class JobRunServiceTest
     {
         // ASSERT
         // Create job definition
+        var command = CrossPlatformTestCommands.Succeed();
+        
         var jobDefinition = new JobDefinition(JobDefinitionId.New(),
-            "NAME",
-            "echo 'Hello World",
+            "Success",
+            command,
             0);
 
         var jobRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
@@ -139,9 +146,11 @@ public class JobRunServiceTest
     {
         // ASSERT
         // Create job definition
+        var command = CrossPlatformTestCommands.SleepForCancellationScenario();
+        
         var jobDefinition = new JobDefinition(JobDefinitionId.New(),
-            "Hi world",
-            "echo 'Hello World'",
+            "Success",
+            command,
             0);
 
         var jobRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
@@ -166,9 +175,11 @@ public class JobRunServiceTest
     {
         // ASSERT
         // Create job definition
+        var command = CrossPlatformTestCommands.Succeed();
+        
         var jobDefinition = new JobDefinition(JobDefinitionId.New(),
-            "NAME",
-            "echo 'Hello World",
+            "Success",
+            command,
             0);
 
         var jobRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
@@ -195,9 +206,11 @@ public class JobRunServiceTest
     {
         // ASSERT
         // Create job definition
+        var command = CrossPlatformTestCommands.Succeed();
+        
         var jobDefinition = new JobDefinition(JobDefinitionId.New(),
-            "NAME",
-            "echo 'Hello World",
+            "Success",
+            command,
             0);
 
         var jobRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
@@ -228,9 +241,10 @@ public class JobRunServiceTest
     {
         // ASSERT
         // Create job definition
+        var command = CrossPlatformTestCommands.Succeed();
         var jobDefinition = new JobDefinition(JobDefinitionId.New(),
-            "NAME",
-            "echo 'Hello World",
+            "Success",
+            command,
             0);
 
         var jobRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
@@ -259,9 +273,10 @@ public class JobRunServiceTest
     {
         // ASSERT
         // Create job definition
+        var command = CrossPlatformTestCommands.Succeed();
         var jobDefinition = new JobDefinition(JobDefinitionId.New(),
-            "NAME",
-            "echo 'Hello World",
+            "Success",
+            command,
             0);
 
         var jobRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
@@ -292,9 +307,11 @@ public class JobRunServiceTest
    {
        // ASSERT
        // Create job definition
+        var command = CrossPlatformTestCommands.Succeed();
+       
        var jobDefinition = new JobDefinition(JobDefinitionId.New(),
-           "NAME",
-           "echo 'Hello World",
+           "Success",
+           command,
            0);
 
        var jobRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
@@ -325,9 +342,11 @@ public class JobRunServiceTest
     {
         
         // Create job definition
+        var command = CrossPlatformTestCommands.Succeed();
+        
         var jobDefinition = new JobDefinition(JobDefinitionId.New(),
-            "NAME",
-            "echo 'Hello World",
+            "Success",
+            command,
             0);
 
         var jobRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
@@ -355,7 +374,8 @@ public class JobRunServiceTest
         // ARRANGE
         // Create job definition with id available, in repo
         var jobDefinitionId = JobDefinitionId.New();
-        var jobDefinition = new JobDefinition(jobDefinitionId, "Hello World", "echo Hello World", 0);
+        var command = CrossPlatformTestCommands.Succeed();
+        var jobDefinition = new JobDefinition(jobDefinitionId, "Success", command, 0);
         var definitionRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
         
         // Create run repo empty
@@ -369,7 +389,8 @@ public class JobRunServiceTest
         var outputStore = new InMemoryJobRunOutputStore();
         
         // Create job runner
-        var runner = new LocalJobRunner(runRepo,definitionRepo,clock,registry,outputStore);
+        var processStartInfoFactory = ProcessStartInfoFactorySelector.CreateDefault();
+        var runner = new LocalJobRunner(runRepo, definitionRepo, clock, registry, outputStore,processStartInfoFactory);
         // Create job runner service
         var jobRunnerService = new JobRunService(definitionRepo,runRepo,runner,clock);
         
@@ -395,7 +416,9 @@ public class JobRunServiceTest
         // ARRANGE
         // Create job definition with id available, in repo
         var jobDefinitionId = JobDefinitionId.New();
-        var jobDefinition = new JobDefinition(jobDefinitionId, "Hello World", "exit 2", 0);
+        var command = CrossPlatformTestCommands.Fail();
+
+        var jobDefinition = new JobDefinition(jobDefinitionId, "Fail", command, 0);
         var definitionRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
         
         // Create run repo empty
@@ -407,8 +430,9 @@ public class JobRunServiceTest
 
         var registry = new InMemoryRunningJobRegistry();
         var outputStore = new InMemoryJobRunOutputStore();
+        var processStartInfoFactory = ProcessStartInfoFactorySelector.CreateDefault();
         // Create job runner
-        var runner = new LocalJobRunner(runRepo,definitionRepo,clock,registry,outputStore);
+        var runner = new LocalJobRunner(runRepo,definitionRepo,clock,registry,outputStore,processStartInfoFactory);
         // Create job runner service
         var jobRunnerService = new JobRunService(definitionRepo,runRepo,runner,clock);
         
@@ -426,7 +450,7 @@ public class JobRunServiceTest
         Assert.Equal(jobDefinitionId, run.JobDefinitionId);
         Assert.Equal(clock.UtcNow, run.CreatedAt);
         Assert.Equal(RunStatus.Failed,run.RunStatus);
-        Assert.Equal(2,run.ExitCode);
+        Assert.Equal(1,run.ExitCode);
         
     }
 
@@ -436,7 +460,8 @@ public class JobRunServiceTest
         // ARRANGE
         // Create job definition with id available, in repo
         var jobDefinitionId = JobDefinitionId.New();
-        var jobDefinition = new JobDefinition(jobDefinitionId, "SLEEP10", "sleep 10", 0);
+        var command = CrossPlatformTestCommands.SleepForCancellationScenario();
+        var jobDefinition = new JobDefinition(jobDefinitionId, "SLEEP10", command, 0);
         var definitionRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
         
         // Create run repo empty
@@ -448,8 +473,9 @@ public class JobRunServiceTest
 
         var registry = new InMemoryRunningJobRegistry();
         var outputStore = new InMemoryJobRunOutputStore();
+        var processStartInfoFactory = ProcessStartInfoFactorySelector.CreateDefault();
         // Create job runner
-        var runner = new LocalJobRunner(runRepo,definitionRepo,clock,registry, outputStore);
+        var runner = new LocalJobRunner(runRepo,definitionRepo,clock,registry, outputStore,processStartInfoFactory);
         // Create job runner service
         var jobRunnerService = new JobRunService(definitionRepo,runRepo,runner,clock);
         

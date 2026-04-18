@@ -1,4 +1,4 @@
-using PlaygroundScheduler.Engine.Domain.Identity;
+using PlaygroundScheduler.Domain.Identity;
 
 namespace PlaygroundScheduler.Engine.Tests;
 

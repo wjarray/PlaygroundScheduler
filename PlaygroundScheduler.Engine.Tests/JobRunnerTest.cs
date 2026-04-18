@@ -1,8 +1,11 @@
-using PlaygroundScheduler.Engine.Domain.Identity;
-using PlaygroundScheduler.Engine.Infra.Registry;
-using PlaygroundScheduler.Engine.Infra.Repository;
-using PlaygroundScheduler.Engine.Infra.Runner;
+using PlaygroundScheduler.Application;
+using PlaygroundScheduler.Domain.Identity;
 using PlaygroundScheduler.Engine.Infra.Store;
+using PlaygroundScheduler.Engine.Tests.Helpers;
+using PlaygroundScheduler.Infrastructure.Runner.Ports;
+using PlaygroundScheduler.Infrastructure.Runner.Registry;
+using PlaygroundScheduler.Infrastructure.Runner.Repository;
+using PlaygroundScheduler.Infrastructure.Runner.Runner;
 
 namespace PlaygroundScheduler.Engine.Tests;
 
@@ -19,7 +22,8 @@ public class JobRunnerTest
         // ARRANGE
         // Create job definition with id available, in repo
         var jobDefinitionId = JobDefinitionId.New();
-        var jobDefinition = new JobDefinition(jobDefinitionId, "Hello World", "echo 'Hello World", 0);
+        var command = CrossPlatformTestCommands.Succeed();
+        var jobDefinition = new JobDefinition(jobDefinitionId, "Success", command, 0);
         var definitionRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
         var createdAt = new DateTimeOffset(2016, 01, 01, 0, 0, 0, TimeSpan.Zero);
 
@@ -34,7 +38,8 @@ public class JobRunnerTest
         var registry = new InMemoryRunningJobRegistry();
         // Create job runner
         var outputStore = new InMemoryJobRunOutputStore();
-        var runner = new LocalJobRunner(runRepo,definitionRepo,clock,registry,outputStore);
+        var processStartInfoFactory = ProcessStartInfoFactorySelector.CreateDefault();
+        var runner = new LocalJobRunner(runRepo, definitionRepo, clock, registry, outputStore,processStartInfoFactory);
 
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => runner.StartAsync(run.Id));
@@ -49,7 +54,9 @@ public class JobRunnerTest
             // ARRANGE
             // Create job definition with id available, in repo
             var jobDefinitionId = JobDefinitionId.New();
-            var jobDefinition = new JobDefinition(jobDefinitionId, "Hello World", "echo 'Hello World", 0);
+            var command = CrossPlatformTestCommands.Succeed();
+            
+            var jobDefinition = new JobDefinition(jobDefinitionId, "Success", command, 0);
             var definitionRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
             var createdAt = new DateTimeOffset(2016, 01, 01, 0, 0, 0, TimeSpan.Zero);
     
@@ -64,8 +71,8 @@ public class JobRunnerTest
             var registry = new InMemoryRunningJobRegistry();
             // Create job runner
             var outputStore = new InMemoryJobRunOutputStore();
-            
-            var runner = new LocalJobRunner(runRepo,definitionRepo,clock,registry,outputStore);
+            var processStartInfoFactory = ProcessStartInfoFactorySelector.CreateDefault();
+            var runner = new LocalJobRunner(runRepo, definitionRepo, clock, registry, outputStore, processStartInfoFactory);
     
             await Assert.ThrowsAsync<InvalidOperationException>(() => runner.CancelAsync(run.Id));
         }
@@ -76,7 +83,9 @@ public class JobRunnerTest
         // ARRANGE
         // Create job definition with id available, in repo
         var jobDefinitionId = JobDefinitionId.New();
-        var jobDefinition = new JobDefinition(jobDefinitionId, "Hello World", "sleep 10", 0);
+        var command = CrossPlatformTestCommands.Succeed();
+        
+        var jobDefinition = new JobDefinition(jobDefinitionId, "Success", command, 0);
         var definitionRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
         var createdAt = new DateTimeOffset(2016, 01, 01, 0, 0, 0, TimeSpan.Zero);
     
@@ -92,7 +101,8 @@ public class JobRunnerTest
         var outputStore = new InMemoryJobRunOutputStore();
         
         // Create job runnerx
-        var runner = new LocalJobRunner(runRepo,definitionRepo,clock,registry,outputStore);
+        var processStartInfoFactory = ProcessStartInfoFactorySelector.CreateDefault();
+        var runner = new LocalJobRunner(runRepo, definitionRepo, clock, registry, outputStore, processStartInfoFactory);
         CancellationToken ct = CancellationToken.None;
         var startedRun= runner.StartAsync(run.Id,ct);
 
@@ -114,7 +124,8 @@ public class JobRunnerTest
     public async Task LOCAL_RUNNER_START_SHOULD_NOT_OVERWRITE_CANCELLED_STATUS_AFTER_PROCESS_EXIT()
     {
         var jobDefinitionId = JobDefinitionId.New();
-        var jobDefinition = new JobDefinition(jobDefinitionId, "Sleep", "sleep 10", 0);
+        var command = CrossPlatformTestCommands.SleepForCancellationScenario();
+        var jobDefinition = new JobDefinition(jobDefinitionId, "Sleep", command, 0);
         var definitionRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
 
         var createdAt = new DateTimeOffset(2016, 01, 01, 0, 0, 0, TimeSpan.Zero);
@@ -128,7 +139,8 @@ public class JobRunnerTest
 
         var registry = new InMemoryRunningJobRegistry();
         var outputStore = new InMemoryJobRunOutputStore();
-        var runner = new LocalJobRunner(runRepo, definitionRepo, clock, registry,outputStore);
+        var processStartInfoFactory = ProcessStartInfoFactorySelector.CreateDefault();
+        var runner = new LocalJobRunner(runRepo, definitionRepo, clock, registry, outputStore, processStartInfoFactory);
 
         var ct = CancellationToken.None;
         var startTask = runner.StartAsync(run.Id, ct);
@@ -155,7 +167,9 @@ public class JobRunnerTest
     public async Task DOUBLE_START_SHOULD_NOT_RUN_THE_LAST_ATTEMPT()
     {
         var jobDefinitionId = JobDefinitionId.New();
-        var jobDefinition = new JobDefinition(jobDefinitionId, "Sleep", "sleep 10", 0);
+        var command = CrossPlatformTestCommands.SleepForCancellationScenario();
+
+        var jobDefinition = new JobDefinition(jobDefinitionId, "Sleep", command, 0);
         var definitionRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
 
         var createdAt = new DateTimeOffset(2016, 01, 01, 0, 0, 0, TimeSpan.Zero);
@@ -169,7 +183,9 @@ public class JobRunnerTest
 
         var registry = new InMemoryRunningJobRegistry();
         var outputStore = new InMemoryJobRunOutputStore();
-        var runner = new LocalJobRunner(runRepo, definitionRepo, clock, registry,outputStore);
+        var processStartInfoFactory = ProcessStartInfoFactorySelector.CreateDefault();
+
+        var runner = new LocalJobRunner(runRepo, definitionRepo, clock, registry, outputStore,processStartInfoFactory);
 
         var ct = CancellationToken.None;
         var startTask = runner.StartAsync(run.Id, ct);
@@ -188,7 +204,9 @@ public class JobRunnerTest
     public async Task SUCCEEDED_JOB_SHOULD_STORE_OUTPUT_RESULT_IN_STORE()
     {
         var jobDefinitionId = JobDefinitionId.New();
-        var jobDefinition = new JobDefinition(jobDefinitionId, "Sleep", "echo 'Hello World'", 0);
+        var command = CrossPlatformTestCommands.HelloWorld();
+        
+        var jobDefinition = new JobDefinition(jobDefinitionId, "Succeed", command, 0);
         var definitionRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
 
         var createdAt = new DateTimeOffset(2016, 01, 01, 0, 0, 0, TimeSpan.Zero);
@@ -202,7 +220,8 @@ public class JobRunnerTest
 
         var registry = new InMemoryRunningJobRegistry();
         var outputStore = new InMemoryJobRunOutputStore();
-        var runner = new LocalJobRunner(runRepo, definitionRepo, clock, registry,outputStore);
+        var processStartInfoFactory = ProcessStartInfoFactorySelector.CreateDefault();
+        var runner = new LocalJobRunner(runRepo, definitionRepo, clock, registry, outputStore,processStartInfoFactory);
 
         var ct = CancellationToken.None;
         
@@ -212,7 +231,7 @@ public class JobRunnerTest
 
         Assert.NotNull(output);
         Assert.Equal(output.RunId, run.Id);
-        Assert.Equal("Hello World\n", output.StdOutput);
+        Assert.Contains("Hello World", output.StdOutput);
         Assert.Empty(output.StdErr);
     }
     
@@ -220,7 +239,9 @@ public class JobRunnerTest
     public async Task FAILED_JOB_SHOULD_STORE_OUTPUT_RESULT_IN_STORE()
     {
         var jobDefinitionId = JobDefinitionId.New();
-        var jobDefinition = new JobDefinition(jobDefinitionId, "Sleep", "echo 'Hello World", 0);
+        var command = CrossPlatformTestCommands.FailWithStdErr();
+        
+        var jobDefinition = new JobDefinition(jobDefinitionId, "Failed",command, 0);
         var definitionRepo = new InMemoryJobDefinitionRepository([jobDefinition]);
 
         var createdAt = new DateTimeOffset(2016, 01, 01, 0, 0, 0, TimeSpan.Zero);
@@ -234,7 +255,8 @@ public class JobRunnerTest
 
         var registry = new InMemoryRunningJobRegistry();
         var outputStore = new InMemoryJobRunOutputStore();
-        var runner = new LocalJobRunner(runRepo, definitionRepo, clock, registry,outputStore);
+        var processStartInfoFactory = ProcessStartInfoFactorySelector.CreateDefault();
+        var runner = new LocalJobRunner(runRepo, definitionRepo, clock, registry, outputStore,processStartInfoFactory);
 
         var ct = CancellationToken.None;
         

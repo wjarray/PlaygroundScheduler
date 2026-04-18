@@ -1,8 +1,8 @@
-using PlaygroundScheduler.Engine.Domain.Identity;
-using PlaygroundScheduler.Engine.Infra.Repository;
-using PlaygroundScheduler.Engine.Infra.Runner;
+using PlaygroundScheduler.Application.Repository;
+using PlaygroundScheduler.Application.Runner;
+using PlaygroundScheduler.Domain.Identity;
 
-namespace PlaygroundScheduler.Engine.Services;
+namespace PlaygroundScheduler.Application.Services;
 
 public class JobRunService : IJobRunService
 {
