@@ -3,7 +3,7 @@
              x:Class="PlaygroundScheduler.Avalonia.App.App"
              xmlns:vm="using:PlaygroundScheduler.Avalonia.App.ViewModels"
              xmlns:views="using:PlaygroundScheduler.Avalonia.App.Views"
-             RequestedThemeVariant="Default">
+             RequestedThemeVariant="Dark">
 
     <Application.Styles>
         <FluentTheme />

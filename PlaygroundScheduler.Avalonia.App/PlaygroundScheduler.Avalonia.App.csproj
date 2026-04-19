@@ -19,6 +19,9 @@
             <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
         </PackageReference>
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+        <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.7" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
+        <PackageReference Include="SQLitePCLRaw.core" Version="3.0.2" />
     </ItemGroup>
 
     <ItemGroup>
@@ -26,5 +29,18 @@
         <DependentUpon>MainWindow.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
+      <Compile Update="Views\Components\JobDefinition\JobEditorView.axaml.cs">
+        <DependentUpon>JobEditorView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\Components\JobDefinition\JobListView.axaml.cs">
+        <DependentUpon>JobListView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\PlaygroundScheduler.Application\PlaygroundScheduler.Application.csproj" />
+      <ProjectReference Include="..\PlaygroundScheduler.Infrastructure.Runner\PlaygroundScheduler.Infrastructure.Runner.csproj" />
     </ItemGroup>
 </Project>

@@ -1,0 +1,21 @@
+@startuml
+
+@startuml
+
+[*] --> Active
+
+state Active {
+    [*] --> Pending
+    Pending --> Running : Start()
+}
+
+Active --> Terminal : Finish
+
+state Terminal {
+    [*] --> Succeeded
+    [*] --> Failed
+    [*] --> Cancelled
+}
+
+@enduml
+@enduml

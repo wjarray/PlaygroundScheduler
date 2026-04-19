@@ -22,7 +22,7 @@ public class LocalJobRunner : ILocalJobRunner
     private readonly IProcessStartInfoFactory _processStartInfoFactory;
 
     public LocalJobRunner(IJobRunRepository jobRunRepository, IJobDefinitionRepository jobDefinitionRepository,
-        IClock clock, IRunningJobRegistry runningJobRegistry, IJobRunOutputStore jobRunOutputStore,IProcessStartInfoFactory processStartInfoFactory)
+        IClock clock, IRunningJobRegistry runningJobRegistry, IJobRunOutputStore jobRunOutputStore, IProcessStartInfoFactory processStartInfoFactory)
     {
         _jobRunRepository = jobRunRepository;
         _jobDefinitionRepository = jobDefinitionRepository;

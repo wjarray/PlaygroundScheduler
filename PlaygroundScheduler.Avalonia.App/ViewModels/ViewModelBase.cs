@@ -2,7 +2,10 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace PlaygroundScheduler.Avalonia.App.ViewModels;
 
-public class ViewModelBase : ObservableObject
+public abstract partial class ViewModelBase : ObservableObject
 {
+    public virtual string TitleSegment => "";
     
+    public virtual ViewModelBase? ActiveChild => null;
 }
+

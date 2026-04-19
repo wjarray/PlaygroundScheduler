@@ -1,6 +1,6 @@
 using PlaygroundScheduler.Domain.Identity;
 
-namespace PlaygroundScheduler.Engine.Tests;
+namespace PlaygroundScheduler.Engine.Tests.Domain;
 
 public class JobRunTest
 {

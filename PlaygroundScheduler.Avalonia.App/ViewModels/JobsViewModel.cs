@@ -9,6 +9,8 @@ namespace PlaygroundScheduler.Avalonia.App.ViewModels;
 
 public partial class JobsViewModel : ViewModelBase
 {
+    public override string TitleSegment { get; } = "Jobs";
+
     public ObservableCollection<JobItemViewModel> Items { get; } = [];
 
     [ObservableProperty] private JobItemViewModel? selectedItem;
@@ -37,25 +39,7 @@ public partial class JobsViewModel : ViewModelBase
 
     public JobsViewModel()
     {
-        Items.Add(new JobItemViewModel
-        {
-            Name = "Night Backup",
-            Status = "Idle",
-            CommandLine = "backup.sh",
-            RetryCount = 3,
-            IsEnabled = true,
-            Type = "Shell"
-        });
-        
-        Items.Add(new JobItemViewModel
-        {
-            Name = "Generate Reports",
-            Status = "Running",
-            CommandLine = "report.py",
-            RetryCount = 1,
-            IsEnabled = true,
-            Type = "Python"
-        });
+   
     }
 
     [RelayCommand]
@@ -74,12 +58,22 @@ public partial class JobsViewModel : ViewModelBase
     [RelayCommand]
     private void Save()
     {
-        //
+        var item = new JobItemViewModel
+        {
+            Name = Editor.Name,
+            Status = "Pending",
+            CommandLine = Editor.CommandLine,
+            RetryCount = Editor.RetryCount,
+            IsEnabled = true,
+            Type = Editor.SelectedType
+        };
+        
+        Items.Add(item);
     }
     
     [RelayCommand]
     private void Delete()
     {
-        //
+        Items.Remove(SelectedItem);
     }
 }

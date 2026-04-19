@@ -4,6 +4,7 @@ namespace PlaygroundScheduler.Avalonia.App.ViewModels;
 
 public partial class JobItemViewModel : ViewModelBase
 {
+    
     [ObservableProperty] private string name = "";
     [ObservableProperty] private string status = "";
     [ObservableProperty] private string commandLine = "";

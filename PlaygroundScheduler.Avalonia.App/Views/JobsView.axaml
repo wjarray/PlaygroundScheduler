@@ -1,10 +1,14 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:PlaygroundScheduler.Avalonia.App.ViewModels"
-             xmlns:components="using:PlaygroundScheduler.Avalonia.App.Views.Components"
+             xmlns:dvm="using:PlaygroundScheduler.Avalonia.App.ViewModels.DesignViewModel"
+             xmlns:components="using:PlaygroundScheduler.Avalonia.App.Views.Components.JobDefinition"
+             xmlns:jobDefinition="clr-namespace:PlaygroundScheduler.Avalonia.App.Views.Components.JobDefinition"
              x:Class="PlaygroundScheduler.Avalonia.App.Views.JobsView"
              x:DataType="vm:JobsViewModel">
-    
+    <Design.DataContext>
+        <dvm:DesignJobsViewModel/>
+    </Design.DataContext>
     <Grid ColumnDefinitions="2*,3*" RowDefinitions="Auto,*">
         <!-- Toolbar -->
         <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="8" Margin="0,0,0,12">
@@ -13,7 +17,7 @@
             <TextBox Width="220" Watermark="Search..." Text="{Binding SearchText}"/>
         </StackPanel>
         
-        <components:JobListView Grid.Row="1" Grid.Column="0"/>
+        <jobDefinition:JobListView Grid.Row="1" Grid.Column="0"/>
         <components:JobEditorView Grid.Row="1" Grid.Column="1"/>
     </Grid>
 </UserControl>

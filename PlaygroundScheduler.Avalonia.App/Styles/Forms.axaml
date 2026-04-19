@@ -1,9 +1,20 @@
 <Styles xmlns="https://github.com/avaloniaui">
+
     <Style Selector="TextBox">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Background" Value="#202020"/>
+        <Setter Property="CaretBrush" Value="White"/>
         <Setter Property="MinHeight" Value="32"/>
     </Style>
 
     <Style Selector="ComboBox">
+        <Setter Property="Foreground" Value="White"/>
         <Setter Property="MinHeight" Value="32"/>
     </Style>
+
+    <Style Selector="NumericUpDown">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="MinHeight" Value="32"/>
+    </Style>
+
 </Styles>

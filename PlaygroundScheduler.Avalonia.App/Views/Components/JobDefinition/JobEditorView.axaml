@@ -1,7 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:PlaygroundScheduler.Avalonia.App.ViewModels"
-             x:Class="PlaygroundScheduler.Avalonia.App.Views.Components.JobEditorView"
+             x:Class="PlaygroundScheduler.Avalonia.App.Views.Components.JobDefinition.JobEditorView"
              x:DataType="vm:JobsViewModel">
     <Border Padding="12" Classes="panel">
         <ScrollViewer>
@@ -9,7 +9,7 @@
                 <TextBlock Grid.Row="0" Grid.Column="0" Text="Name"/>
                 <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Editor.Name}"/>
                 
-                <TextBlock Grid.Row="1" Grid.Column="0" Text="Name"/>
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Command Line"/>
                 <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Editor.CommandLine}"/>
                 
                 <TextBlock Grid.Row="2" Grid.Column="0" Text="Retry Count"/>

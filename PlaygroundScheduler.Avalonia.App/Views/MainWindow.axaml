@@ -3,18 +3,23 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:PlaygroundScheduler.Avalonia.App.ViewModels"
+        xmlns:dvm="using:PlaygroundScheduler.Avalonia.App.ViewModels.DesignViewModel"
         xmlns:components="using:PlaygroundScheduler.Avalonia.App.Views.Components"
         x:Class="PlaygroundScheduler.Avalonia.App.Views.MainWindow"
-        x:DataType="vm:MainViewModel"
+        x:DataType="vm:MainWindowViewModel"
         mc:Ignorable="d" 
         d:DesignWidth="1400" 
         d:DesignHeight="900"
         Title="PlaygroundScheduler">
         
+        <Design.DataContext>
+                <dvm:DesignMainWindowViewModel/>
+        </Design.DataContext>
+        
         <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="240,*">
                 <!-- Header -->
                 <Border Grid.Row="0" Grid.ColumnSpan="2" Padding="12" Classes="topbar">
-                        <TextBlock Text="Scheduler" FontSize="20" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding SelectedPageTitle}" FontSize="20" FontWeight="Bold"/>
                 </Border>                
                 
                 <!-- SideBar -->

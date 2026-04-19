@@ -27,6 +27,14 @@ public static class DbInit
             error_message TEXT NOT NULL,
             FOREIGN_KEY(job_definition_id) REFERENCES job_definition(id)
             );
+
+        CREATE TABLE IF NOT EXISTS job_run_history (
+                  id TEXT PRIMARY KEY,
+                  job_run_id TEXT NOT NULL,
+                  run_status TEXT NOT NULL,
+                  created_at TEXT NOT NULL,
+                  FOREIGN_KEY(job_run_id) REFERENCES job_run(id)
+                  );
 """;
         
         await command.ExecuteNonQueryAsync(ct);
