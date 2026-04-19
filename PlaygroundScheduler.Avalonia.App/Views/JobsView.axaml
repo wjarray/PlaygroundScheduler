@@ -1,0 +1,19 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PlaygroundScheduler.Avalonia.App.ViewModels"
+             xmlns:components="using:PlaygroundScheduler.Avalonia.App.Views.Components"
+             x:Class="PlaygroundScheduler.Avalonia.App.Views.JobsView"
+             x:DataType="vm:JobsViewModel">
+    
+    <Grid ColumnDefinitions="2*,3*" RowDefinitions="Auto,*">
+        <!-- Toolbar -->
+        <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="8" Margin="0,0,0,12">
+            <Button Content="New" Command="{Binding CreateCommand}"/>
+            <Button Content="Refresh" Command="{Binding RefreshCommand}"/>
+            <TextBox Width="220" Watermark="Search..." Text="{Binding SearchText}"/>
+        </StackPanel>
+        
+        <components:JobListView Grid.Row="1" Grid.Column="0"/>
+        <components:JobEditorView Grid.Row="1" Grid.Column="1"/>
+    </Grid>
+</UserControl>

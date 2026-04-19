@@ -1,0 +1,23 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:PlaygroundScheduler.Avalonia.App.ViewModels"
+             x:Class="PlaygroundScheduler.Avalonia.App.Views.Components.JobListView"
+             x:DataType="vm:JobsViewModel">
+    <Border Margin="0,0,12,0" Padding="8" Classes="panel">
+        <ListBox ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                   <Border Padding="8">
+                       <StackPanel>
+                           <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+                           <TextBlock Text="{Binding Status}" Opacity="0.7"/>
+                       </StackPanel>
+                   </Border>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+            
+            
+        </ListBox>
+        
+    </Border>
+</UserControl>

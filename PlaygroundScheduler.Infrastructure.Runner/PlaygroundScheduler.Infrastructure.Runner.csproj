@@ -9,7 +9,6 @@
     <ItemGroup>
       <ProjectReference Include="..\PlaygroundScheduler.Application\PlaygroundScheduler.Application.csproj" />
       <ProjectReference Include="..\PlaygroundScheduler.Domain\PlaygroundScheduler.Domain.csproj" />
-      <ProjectReference Include="..\PlaygroundScheduler.Engine\PlaygroundScheduler.Engine.csproj" />
     </ItemGroup>
 
 </Project>

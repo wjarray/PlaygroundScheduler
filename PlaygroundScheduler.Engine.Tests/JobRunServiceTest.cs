@@ -2,12 +2,12 @@ using System.Diagnostics.Tracing;
 using PlaygroundScheduler.Application;
 using PlaygroundScheduler.Application.Services;
 using PlaygroundScheduler.Domain.Identity;
-using PlaygroundScheduler.Engine.Infra.Store;
 using PlaygroundScheduler.Engine.Tests.Helpers;
 using PlaygroundScheduler.Infrastructure.Runner.Ports;
 using PlaygroundScheduler.Infrastructure.Runner.Registry;
 using PlaygroundScheduler.Infrastructure.Runner.Repository;
 using PlaygroundScheduler.Infrastructure.Runner.Runner;
+using PlaygroundScheduler.Infrastructure.Runner.Store;
 
 namespace PlaygroundScheduler.Engine.Tests;
 

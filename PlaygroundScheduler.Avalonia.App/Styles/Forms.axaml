@@ -1,0 +1,9 @@
+<Styles xmlns="https://github.com/avaloniaui">
+    <Style Selector="TextBox">
+        <Setter Property="MinHeight" Value="32"/>
+    </Style>
+
+    <Style Selector="ComboBox">
+        <Setter Property="MinHeight" Value="32"/>
+    </Style>
+</Styles>
