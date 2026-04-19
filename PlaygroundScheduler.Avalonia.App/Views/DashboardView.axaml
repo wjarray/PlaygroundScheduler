@@ -1,4 +1,5 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="PlaygroundScheduler.Avalonia.App.Views.DashboardView">
+    <TextBlock Text="DASHBOARD OK" FontSize="30" Foreground="Red"/>
 </UserControl>

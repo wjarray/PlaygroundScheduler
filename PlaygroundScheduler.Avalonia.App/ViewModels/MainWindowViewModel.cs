@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace PlaygroundScheduler.Avalonia.App.ViewModels;
 
-public partial class MainViewModel : ViewModelBase
+public partial class MainWindowViewModel : ViewModelBase
 {
     [ObservableProperty] private ViewModelBase? currentViewModel;
 
@@ -11,13 +11,13 @@ public partial class MainViewModel : ViewModelBase
     public JobsViewModel JobsVm { get; }
     public SettingsViewModel SettingsVm { get; }
 
-    public MainViewModel()
+    public MainWindowViewModel()
     {
         DashboardVm = new DashboardViewModel();
         JobsVm = new JobsViewModel();
         SettingsVm = new SettingsViewModel();
 
-        CurrentViewModel = DashboardVm;
+        CurrentViewModel = JobsVm;
     }
 
     [RelayCommand]

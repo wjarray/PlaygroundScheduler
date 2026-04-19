@@ -5,7 +5,7 @@
         xmlns:vm="using:PlaygroundScheduler.Avalonia.App.ViewModels"
         xmlns:components="using:PlaygroundScheduler.Avalonia.App.Views.Components"
         x:Class="PlaygroundScheduler.Avalonia.App.Views.MainWindow"
-        x:DataType="vm:MainViewModel"
+        x:DataType="vm:MainWindowViewModel"
         mc:Ignorable="d" 
         d:DesignWidth="1400" 
         d:DesignHeight="900"

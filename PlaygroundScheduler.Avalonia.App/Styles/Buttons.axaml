@@ -1,7 +1,15 @@
 <Styles xmlns="https://github.com/avaloniaui">
-    <Style Selector="Button">
+    <Style Selector="Button:pointerover">
+        <Setter Property="Foreground" Value="Red"/>
         <Setter Property="MinHeight" Value="32"/>
         <Setter Property="Padding" Value="12,6"/>
         <Setter Property="CornerRadius" Value="6"/>
     </Style>
+    <Style Selector="Button">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="MinHeight" Value="32"/>
+        <Setter Property="Padding" Value="12,6"/>
+        <Setter Property="CornerRadius" Value="6"/>
+    </Style>
+  
 </Styles>
