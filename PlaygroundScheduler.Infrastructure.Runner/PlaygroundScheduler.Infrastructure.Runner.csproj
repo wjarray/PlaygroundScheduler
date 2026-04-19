@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\PlaygroundScheduler.Application\PlaygroundScheduler.Application.csproj" />
+      <ProjectReference Include="..\PlaygroundScheduler.Domain\PlaygroundScheduler.Domain.csproj" />
+      <ProjectReference Include="..\PlaygroundScheduler.Engine\PlaygroundScheduler.Engine.csproj" />
+    </ItemGroup>
+
+</Project>
