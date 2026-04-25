@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -30,24 +32,34 @@ public partial class MainWindowViewModel : ViewModelBase
     protected MainWindowViewModel()
     {
     }
+    
+    public async Task LoadAsync(CancellationToken ct = default)
+    {
+        if (CurrentViewModel is ILoadableViewModel loadable)
+            await loadable.LoadAsync(ct);
+    }
 
     [RelayCommand]
-    private void ShowDashboard()
+    private async Task ShowDashboard()
     {
         CurrentViewModel = DashboardVm;
+        await LoadCurrentPageAsync();
     }
 
     [RelayCommand]
-    private void ShowJobs()
+    private async Task ShowJobs()
     {
         CurrentViewModel = JobsVm;
+        await LoadCurrentPageAsync();
+        
     }
 
-
     [RelayCommand]
-    private void ShowSettings()
+    private async Task ShowSettings()
     {
         CurrentViewModel = SettingsVm;
+        await LoadCurrentPageAsync();
+        
     }
 
     partial void OnCurrentViewModelChanged(ViewModelBase? value)
@@ -71,5 +83,11 @@ public partial class MainWindowViewModel : ViewModelBase
 
             current = current.ActiveChild;
         }
+    }
+    
+    private async Task LoadCurrentPageAsync()
+    {
+        if (CurrentViewModel is ILoadableViewModel loadable)
+            await loadable.LoadAsync();
     }
 }

@@ -19,11 +19,11 @@ public class SqliteJobDefinitionRepository : IJobDefinitionRepository
         await using var connection = _connectionFactory.CreateConnection();
         var command = connection.CreateCommand();
         command.CommandText = """
-                                  SELECT id, name, command_line, max_retry_count
+                                  SELECT id, name, command_line, retry_count
                                   FROM job_definition
-                                  WHERE id = $id
+                                  WHERE id = $id;
                               """;
-        command.Parameters.AddWithValue("$id", id.Value);
+        command.Parameters.AddWithValue("$id", id.Value.ToString());
 
         await using var reader = await command.ExecuteReaderAsync(ct);
 
@@ -42,7 +42,7 @@ public class SqliteJobDefinitionRepository : IJobDefinitionRepository
         await using var connection = _connectionFactory.CreateConnection();
         var command = connection.CreateCommand();
         command.CommandText = """
-                                  SELECT id, name, command_line, max_retry_count
+                                  SELECT id, name, command_line, retry_count
                                   FROM job_definition
                               """;
 
@@ -74,7 +74,7 @@ public class SqliteJobDefinitionRepository : IJobDefinitionRepository
                               SET
                                   name = $jobName,
                                   command_line = $commandLine,
-                                  max_retry_count = $maxRetryCount
+                                  retry_count = $maxRetryCount
                               WHERE id = $jobDefinitionId;
                               """;
 
@@ -127,15 +127,13 @@ public class SqliteJobDefinitionRepository : IJobDefinitionRepository
         await using var connection = _connectionFactory.CreateConnection();
         var command = connection.CreateCommand();
         
-        
-        
         command.CommandText = """
                                  DELETE
                                  FROM job_definition
                                  WHERE id = $jobDefinitionId
                               """;
         
-        command.Parameters.AddWithValue("$jobDefinitionId", definitionId.Value);
+        command.Parameters.AddWithValue("$jobDefinitionId", definitionId.Value.ToString());
 
         await using var reader = await command.ExecuteReaderAsync(ct);
 

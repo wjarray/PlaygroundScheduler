@@ -12,7 +12,7 @@ using PlaygroundScheduler.Avalonia.App.ViewModels.DTO;
 
 namespace PlaygroundScheduler.Avalonia.App.ViewModels;
 
-public partial class JobsViewModel : ViewModelBase
+public partial class JobsViewModel : ViewModelBase, ILoadableViewModel
 {
     private readonly IJobDefinitionService _jobDefinitionService;
     public override string TitleSegment { get; } = "Jobs";
@@ -54,8 +54,35 @@ public partial class JobsViewModel : ViewModelBase
             SelectedType = value.Type
         };
     }
- 
- 
+    
+    private async Task LoadItemsAsync()
+    {
+        if (IsBusy)
+            return;
+
+        try
+        {
+            IsBusy = true;
+            ErrorMessage = null;
+
+            var definitions = await _jobDefinitionService.GetAllAsync();
+
+            Items.Clear();
+
+            foreach (var definition in definitions)
+            {
+                Items.Add(MapToItem(definition));
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
 
     [RelayCommand]
     private void Create()
@@ -68,21 +95,16 @@ public partial class JobsViewModel : ViewModelBase
         };
         ErrorMessage = null;
     }
-
+    
+    public async Task LoadAsync(CancellationToken ct = default)
+    {
+        await LoadItemsAsync(ct);
+    }
+    
     [RelayCommand]
     private async Task RefreshAsync()
     {
-        await RunBusyAsync(async ct =>
-        {
-            var definitions = await _jobDefinitionService.GetAllAsync(ct);
-
-            Items.Clear();
-
-            foreach (var definition in definitions)
-            {
-                Items.Add(MapToItem(definition));
-            }
-        });
+        await LoadItemsAsync();
     }
 
     [RelayCommand]
@@ -195,4 +217,29 @@ public partial class JobsViewModel : ViewModelBase
             IsBusy = false;
         }
     }
+    
+    private async Task LoadItemsAsync(CancellationToken ct)
+    {
+        try
+        {
+            IsBusy = true;
+            ErrorMessage = null;
+
+            var definitions = await _jobDefinitionService.GetAllAsync(ct);
+
+            Items.Clear();
+
+            foreach (var definition in definitions)
+                Items.Add(MapToItem(definition));
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+  
 }

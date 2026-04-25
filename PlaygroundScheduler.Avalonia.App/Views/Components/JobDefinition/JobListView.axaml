@@ -7,6 +7,7 @@
     <Design.DataContext>
         <dvm:DesignJobsViewModel/>
     </Design.DataContext>
+    
     <Border Margin="0,0,12,0" Padding="8" Classes="panel">
         <ListBox ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem}">
             <ListBox.ItemTemplate>
