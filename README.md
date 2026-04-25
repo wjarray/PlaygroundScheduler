@@ -1,5 +1,7 @@
 A simple Local Job Scheduler.
 
+Check UML Diagram found in PlaygroundScheduler.Domain. That is the brievest explanation of what i intend to do.
+
 This project is designed to capture the lifecycle of a process that we can launch locally.
 
 The crux of this project is to distinguish clearly **stable and durable** data versus **transitory** data : 
