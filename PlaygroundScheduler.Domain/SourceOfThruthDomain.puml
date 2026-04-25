@@ -1,0 +1,44 @@
+@startuml
+
+Title Domain Dependency Graph
+
+entity JobDefinition {
+  * Id : JobDefinitionId <<PK>>
+  --
+  Name : string
+  CommandLine : string
+  TimeoutSeconds : int
+}
+
+entity JobRun {
+  * Id : JobRunId <<PK>>
+  --
+  JobDefinitionId : JobDefinitionId <<FK>>
+  Status : RunStatus
+  CreatedAt : DateTimeOffset
+  StartedAt : DateTimeOffset?
+  EndedAt : DateTimeOffset?
+}
+
+entity RunHistory {
+  * Id : RunHistoryId <<PK>>
+  --
+  JobRunId : JobRunId <<FK>>
+  Status : RunStatus
+  CreatedAt : DateTimeOffset
+}
+
+entity JobRunOutput {
+  * Id : JobRunOutputId <<PK>>
+  --
+  JobRunId : JobRunId <<FK>>
+  CreatedAt : DateTimeOffset?
+  ErrorMessage : string
+  ExitCode : int
+  Output : string 
+}
+
+JobDefinition ||--o{ JobRun : defines
+JobRun ||--o{ RunHistory : defines
+JobRun ||--o{ JobRunOutput : defines
+@enduml

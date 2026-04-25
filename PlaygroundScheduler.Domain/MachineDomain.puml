@@ -1,5 +1,6 @@
 @startuml
 
+
 skinparam linetype ortho
 skinparam shadowing false
 skinparam backgroundColor White
@@ -9,14 +10,19 @@ skinparam defaultFontSize 16
 skinparam state {
   BackgroundColor White
   BorderColor #333333
+  
   FontColor #111111
   FontSize 10
+  
   AttributeFontSize 14
   ArrowFontSize 10
-  ArrowFontColor MediumVioletRed
+  
+  ArrowFontColor Red
   ArrowColor Black
-  RoundCorner 18
+  RoundCorner 90
 }
+
+Title Domain State Machine
 
 state "Pending" as P {
 P : CreatedAt
@@ -31,13 +37,13 @@ state "Terminal state " as T {
 state "Succeeded" as S {
 S : EndedAt
 S : Result
-S : ExitCode = 0
+S : ExitCode
 
 }
 state "Faulted" as F {
 F : EndedAt
 F : ErrorMessage
-F : ExitCode != 0
+F : ExitCode
 }
 state "Cancelled" as C {
 C : EndedAt
@@ -45,21 +51,29 @@ C : ErrorMessage
 }
 }   
 
-[*] -down-> P
+[*] -down-> P : Create
 
-P -down-> R : Started
-P -down-> C : Cancelled
+P --down-> R : Start \n [G1]
+P -down-> C : Cancel 
 
-R -down-> S : Succeeded
-R -down-> F : Faulted
-R -down-> C : Cancelled
+R --down--> S : Success\n [G2]
+R -down-> F : Fault \n[G3]
+R -down-> C : Cancel \n[G4]
 
-S -right-> [*]
+S -down-> [*]
 F -right-> [*]
 C -right-> [*]
 
-note right of S
+note right of T
   Terminal state.
   No outgoing domain transition.
 end note
+
+legend right
+  |= Guard |= Meaning |
+  | G1 | JobDefinition exists |
+  | G2 | ExitCode == 0 |
+  | G3 | ExitCode != 0 |
+  | G4 | Run is not terminal |
+endlegend
 @enduml

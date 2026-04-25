@@ -1,21 +1,104 @@
 @startuml
 
-@startuml
+left to right direction
+skinparam nodesep 60
+skinparam ranksep 50
+skinparam linetype polyline
 
-[*] --> Active
-
-state Active {
-    [*] --> Pending
-    Pending --> Running : Start()
+database RelationnalDB {
+    [Domain] 
+    [Logs]
 }
 
-Active --> Terminal : Finish
+component [HandleDb]
 
-state Terminal {
-    [*] --> Succeeded
-    [*] --> Failed
-    [*] --> Cancelled
+package Runtime {
+
+'     Connection source of truth
+     [HandleDb] <--up-- [Domain]
+     [HandleDb] <--up-- [Logs]
+     HandleDb <--up-- [IRepository]
+     HandleDb <--up-- [IRepository]
+     
+     package Repositories {
+         [IRepository] --down--> [JobRepository]
+         [IRepository] --down--> [JobRunRepository]
+         [IRepository] --down--> [JobRunStatusHistory]
+         
+     }
+     
+     package Services {
+        [LocalJobRunner] --down--> StartAsync
+        [LocalJobRunner] --down--> CancelAsync
+        StartAsync  --down--> IRepository
+        CancelAsync  --down--> IRepository
+     }
+     
+     package Clock {
+        [UtcNow] <--right-- StartAsync
+        [UtcNow] <--right-- CancelAsync
+     }
+     package Registry {
+        [IRunningJobRegistry] <--down-- StartAsync
+        [IRunningJobRegistry] <--down-- CancelAsync
+        
+     }
+       
+     package Factory {
+          [ProcessStartInfo] <--down-- StartAsync
+          [ProcessStartInfo] <--down-- CancelAsync
+          [ProcessStartInfo] --left--> [HandleOS]
+          [ProcessStartInfo] --right--> [HandleOS]
+          
+     }
+     package Store {
+          [JobRunOutputStore]
+    }
 }
 
-@enduml
+component [HandleOS]
+ 
+package OS {
+component [WindowssOS]
+component [UnixOS]
+
+[HandleOS] --up--> [WindowssOS]
+[HandleOS] --up--> [UnixOS]
+
+}
+
+package UI {
+component [AvaloniaApp]
+}
+'    Connection Registries
+
+
+'package AppRuntime {
+'
+'     
+'    package Repository {
+'       Repositories -right- [JobRep]  
+'       IRepository -right-  [JobRunRep] 
+'    }
+'    [LocalJobRunner]
+'    [JobRep]
+'      
+'    package Service {
+'          [JobRunService] -down- LocalJobRunner
+'    }
+'    
+'
+'       package Registries {
+'            [RunningJobRegistries]  -down- IRegistry
+'        }
+'
+'       package Store {
+'            [JobRunOutputStore] 
+'       }  
+'}
+'    
+
+
+
+
 @enduml
