@@ -1,3 +1,5 @@
+using PlaygroundScheduler.Avalonia.App.ViewModels.DTO;
+
 namespace PlaygroundScheduler.Avalonia.App.ViewModels.DesignViewModel;
 
 public class DesignJobsViewModel : JobsViewModel

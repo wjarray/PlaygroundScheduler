@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Microsoft.Extensions.DependencyInjection;
 using PlaygroundScheduler.Avalonia.App.Views;
 
 namespace PlaygroundScheduler.Avalonia.App;
@@ -17,7 +18,7 @@ public partial class App : global::Avalonia.Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow();
+            desktop.MainWindow = ServiceProvider.GetRequiredService<MainWindow>();
         }
         base.OnFrameworkInitializationCompleted();
     }

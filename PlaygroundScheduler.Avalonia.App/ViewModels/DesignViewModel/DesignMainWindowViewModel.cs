@@ -9,7 +9,7 @@ public class DesignMainWindowViewModel : MainWindowViewModel
     public SettingsViewModel SettingsVm { get; }
 
 
-    public DesignMainWindowViewModel()
+    public DesignMainWindowViewModel() 
     {
         DashboardVm = new DashboardViewModel();
         JobsVm = new DesignJobsViewModel();

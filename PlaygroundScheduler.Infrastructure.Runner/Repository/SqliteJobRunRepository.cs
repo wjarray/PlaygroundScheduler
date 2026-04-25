@@ -2,7 +2,7 @@ using PlaygroundScheduler.Application.Repository;
 using PlaygroundScheduler.Domain.Identity;
 using PlaygroundScheduler.Infrastructure.Runner.Db.Connection;
 
-namespace PlaygroundScheduler.Infrastructure.Runner.Db;
+namespace PlaygroundScheduler.Infrastructure.Runner.Repository;
 
 public class SqliteJobRunRepository : IJobRunRepository
 {

@@ -26,7 +26,8 @@ public sealed class SqliteDatabaseInitializer : IDatabaseInitializer
                                   CREATE TABLE IF NOT EXISTS job_definition (
                                       id TEXT PRIMARY KEY,
                                       name TEXT NOT NULL,
-                                      command_line TEXT NOT NULL
+                                      command_line TEXT NOT NULL,
+                                      retry_count INT NOT NULL
                                   );
 
                                   CREATE TABLE IF NOT EXISTS job_run (
@@ -37,6 +38,14 @@ public sealed class SqliteDatabaseInitializer : IDatabaseInitializer
                                       started_at TEXT NULL,
                                       completed_at TEXT NULL,
                                       FOREIGN KEY(job_definition_id) REFERENCES job_definition(id)
+                                  );
+                                    
+                                  CREATE TABLE IF NOT EXISTS job_run_history (
+                                      id TEXT PRIMARY KEY,
+                                      job_run_id TEXT NOT NULL,
+                                      status TEXT NOT NULL,
+                                      created_at TEXT NOT NULL,
+                                      FOREIGN KEY(job_run_id) REFERENCES job_run(id)
                                   );
                               """;
 

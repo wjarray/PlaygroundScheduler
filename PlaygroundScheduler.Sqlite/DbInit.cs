@@ -13,7 +13,7 @@ public static class DbInit
             id TEXT PRIMARY KEY,
             name TEXT NOT NULL,
             command_line TEXT NOT NULL,
-            max_retry_count INTEGER NOT NULL
+            retry_count INTEGER NOT NULL
         );
 
         CREATE TABLE IF NOT EXISTS job_run (

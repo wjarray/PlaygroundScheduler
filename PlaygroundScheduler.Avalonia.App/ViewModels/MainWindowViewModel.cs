@@ -17,14 +17,18 @@ public partial class MainWindowViewModel : ViewModelBase
     public JobsViewModel JobsVm { get; }
     public SettingsViewModel SettingsVm { get; }
 
-    public MainWindowViewModel()
+    public MainWindowViewModel(DashboardViewModel dashboardVm, JobsViewModel jobViewModel, SettingsViewModel settingsViewModel )
     {
-        DashboardVm = new DashboardViewModel();
-        JobsVm = new JobsViewModel();
-        SettingsVm = new SettingsViewModel();
+        DashboardVm = dashboardVm;
+        JobsVm = jobViewModel;
+        SettingsVm = settingsViewModel;
         
         CurrentViewModel = JobsVm;
         
+    }
+
+    protected MainWindowViewModel()
+    {
     }
 
     [RelayCommand]

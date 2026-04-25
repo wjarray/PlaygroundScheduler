@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\PlaygroundScheduler.Domain\PlaygroundScheduler.Domain.csproj" />
+      <ProjectReference Include="..\PlaygroundScheduler.Sqlite\PlaygroundScheduler.Sqlite.csproj" />
     </ItemGroup>
 
 </Project>

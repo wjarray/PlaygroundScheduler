@@ -41,6 +41,17 @@ public class InMemoryJobDefinitionRepository : IJobDefinitionRepository
         return Task.CompletedTask;
     }
 
+    public Task CreateAsync(JobDefinition job, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        var index = _jobDefinitions.FindIndex(x => x.DefinitionId == job.DefinitionId);
+        if (index >= 0)
+            _jobDefinitions[index] = job;
+        else
+            _jobDefinitions.Add(job);
+        return Task.CompletedTask;
+    }
+
     public Task DeleteAsync(JobDefinitionId definitionId, CancellationToken ct = default)
     {
         var existing = _jobDefinitions.FirstOrDefault(x => x.DefinitionId == definitionId);

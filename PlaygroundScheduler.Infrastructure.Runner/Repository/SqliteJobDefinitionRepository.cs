@@ -3,7 +3,7 @@ using PlaygroundScheduler.Application.Repository;
 using PlaygroundScheduler.Domain.Identity;
 using PlaygroundScheduler.Infrastructure.Runner.Db.Connection;
 
-namespace PlaygroundScheduler.Infrastructure.Runner.Db;
+namespace PlaygroundScheduler.Infrastructure.Runner.Repository;
 
 public class SqliteJobDefinitionRepository : IJobDefinitionRepository
 {
@@ -69,29 +69,59 @@ public class SqliteJobDefinitionRepository : IJobDefinitionRepository
         await using var connection = _connectionFactory.CreateConnection();
         var command = connection.CreateCommand();
         
-        
-        
         command.CommandText = """
-                                  INSERT INTO job_definition (id, name, command_line, max_retry_count)
-                                  VALUES ($jobDefinitionId,$jobName,$commandLine,$maxRetryCount)
-                                  WHERE id = $jobId
+                              UPDATE job_definition
+                              SET
+                                  name = $jobName,
+                                  command_line = $commandLine,
+                                  max_retry_count = $maxRetryCount
+                              WHERE id = $jobDefinitionId;
                               """;
 
-        List<SqliteParameter> parameters = new();
-        parameters.Add(new SqliteParameter("$jobDefinitionId", job.DefinitionId.Value));
-        parameters.Add(new SqliteParameter("$jobName", job.Name));
-        parameters.Add(new SqliteParameter("$commandLine", job.CommandLine));
-        parameters.Add(new SqliteParameter("$maxRetryCount", job.MaxRetryCount));
-        
-        command.Parameters.AddRange(parameters);
+        command.Parameters.Add(new SqliteParameter("$jobDefinitionId", job.DefinitionId.Value.ToString()));
+        command.Parameters.Add(new SqliteParameter("$jobName", job.Name));
+        command.Parameters.Add(new SqliteParameter("$commandLine", job.CommandLine));
+        command.Parameters.Add(new SqliteParameter("$maxRetryCount", job.MaxRetryCount));
 
-        await using var reader = await command.ExecuteReaderAsync(ct);
+        var affectedRows = await command.ExecuteNonQueryAsync(ct);
 
-        if (!await reader.ReadAsync(ct))
-            throw new Exception("insert raté");
-             
+        if (affectedRows != 1)
+            throw new InvalidOperationException($"Job definition '{job.DefinitionId.Value}' was not found.");
     }
 
+    public async Task CreateAsync(JobDefinition job, CancellationToken ct = default)
+    {
+        await using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync(ct);
+
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = """
+                              INSERT INTO job_definition (
+                                  id,
+                                  name,
+                                  command_line,
+                                  retry_count
+                              )
+                              VALUES (
+                                         $jobDefinitionId,
+                                         $jobName,
+                                         $commandLine,
+                                         $retryCount
+                                     );
+                              """;
+
+        command.Parameters.Add(new SqliteParameter("$jobDefinitionId", job.DefinitionId.Value.ToString()));
+        command.Parameters.Add(new SqliteParameter("$jobName", job.Name));
+        command.Parameters.Add(new SqliteParameter("$commandLine", job.CommandLine));
+        command.Parameters.Add(new SqliteParameter("$retryCount", job.MaxRetryCount));
+
+        var affectedRows = await command.ExecuteNonQueryAsync(ct);
+
+        if (affectedRows != 1)
+            throw new InvalidOperationException($"Insert failed. affectedRows={affectedRows}");
+    }
+    
     public async Task DeleteAsync(JobDefinitionId definitionId, CancellationToken ct = default)
     {
         await using var connection = _connectionFactory.CreateConnection();

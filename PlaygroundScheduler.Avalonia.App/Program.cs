@@ -1,12 +1,16 @@
 ﻿using Avalonia;
 using Microsoft.Extensions.DependencyInjection;
 using PlaygroundScheduler.Application;
+using PlaygroundScheduler.Application.Repository;
 using PlaygroundScheduler.Application.Runner;
 using PlaygroundScheduler.Application.Services;
+using PlaygroundScheduler.Avalonia.App.ViewModels;
 using PlaygroundScheduler.Avalonia.App.Views;
 using PlaygroundScheduler.Infrastructure.Runner.Db;
 using PlaygroundScheduler.Infrastructure.Runner.Db.Connection;
+using PlaygroundScheduler.Infrastructure.Runner.Repository;
 using PlaygroundScheduler.Infrastructure.Runner.Runner;
+using PlaygroundScheduler.Infrastructure.Runner.Services;
 
 namespace PlaygroundScheduler.Avalonia.App;
 
@@ -19,22 +23,44 @@ class Program
     {
         SQLitePCL.Batteries.Init();
         var services = new ServiceCollection();
+      
+        // Setting DB 
+        services.AddSingleton<IDatabasePathProvider, DesktopDatabasePathProvider>();
+        services.AddSingleton<IDatabaseInitializer,SqliteDatabaseInitializer>();
+        services.AddSingleton<ISqliteConnectionFactory, SqliteConnectionFactory>();
+        
+        // Persistence
+        services.AddSingleton<IJobDefinitionRepository, SqliteJobDefinitionRepository>();
+        services.AddSingleton<IJobRunRepository, SqliteJobRunRepository>();
 
+        //Setting runner
         services.AddSingleton<IClock, FakeClock>();
         services.AddSingleton<ILocalJobRunner, LocalJobRunner>();
+        
+        //Setting View Models
+        
+        services.AddSingleton<MainWindowViewModel>();
+        services.AddSingleton<DashboardViewModel>();
+        services.AddSingleton<JobsViewModel>();
+        services.AddSingleton<SettingsViewModel>();
+
+        // Application services
+        services.AddSingleton<IJobDefinitionService, JobDefinitionService>();
+
+      
+        
+        //Setting View
         services.AddTransient<MainWindow>();
         
-        services.AddSingleton<IDatabasePathProvider, DesktopDatabasePathProvider>();
-        services.AddSingleton<SqliteDatabaseInitializer>();
-        services.AddScoped<SqliteConnectionFactory>();
+     
         var serviceProvider = services.BuildServiceProvider();
         
+        
         serviceProvider
-            .GetRequiredService<SqliteDatabaseInitializer>()
+            .GetRequiredService<IDatabaseInitializer>()
             .EnsureCreatedAsync()
             .GetAwaiter()
             .GetResult();
-        
         
         App.ServiceProvider = serviceProvider;
         
